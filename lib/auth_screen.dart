@@ -2,21 +2,6 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'theme.dart';
 
-void main() => runApp(const MyApp());
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.dark(),
-      home: const AuthPage(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
   @override
@@ -42,11 +27,10 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
-      // Чтобы избавиться от overflow при появлении клавиатуры:
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Container(
+          child: SizedBox(
             width: 380,
             child: Column(
               mainAxisSize: MainAxisSize.min,

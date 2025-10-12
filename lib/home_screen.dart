@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'learning_tab.dart';
-import 'information_base_page.dart';
-import 'profile_page.dart';
+import 'learning_tab_screen.dart';
+import 'information_base_screen.dart';
+import 'profile_screen.dart';
 import 'theme.dart';
 
 class HomeScreen extends StatefulWidget {
