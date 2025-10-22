@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'theme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
+
   @override
   State<AuthPage> createState() => _AuthPageState();
 }
 
 class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
+  final supabase = Supabase.instance.client;
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   @override
   void initState() {
@@ -20,8 +28,74 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   @override
   void dispose() {
     _tabController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
+
+  Future<void> createAccount() async {
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
+  final confirmPassword = _confirmPasswordController.text.trim();
+
+  if (password != confirmPassword) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Пароли не совпадают')),
+    );
+    return;
+  }
+
+  try {
+    final res = await supabase.auth.signUp(email: email, password: password);
+    if (res.user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Не удалось зарегистрироваться')),
+      );
+    }
+  } on AuthException catch (error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Ошибка регистрации: ${error.message}')),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Неизвестная ошибка: $e')),
+    );
+  }
+}
+
+Future<void> login() async {
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
+
+  try {
+    final res = await supabase.auth.signInWithPassword(email: email, password: password);
+    if (res.user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Не удалось войти')),
+      );
+    }
+  } on AuthException catch (error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Ошибка входа: ${error.message}')),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Неизвестная ошибка: $e')),
+    );
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +129,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                 TabBar(
                   controller: _tabController,
                   tabs: const [
-                    Tab(text: "Create Account"),
-                    Tab(text: "Log In"),
+                    Tab(text: "Создать аккаунт"),
+                    Tab(text: "Войти"),
                   ],
                   indicatorColor: AppColors.alternate,
                   labelColor: Colors.white,
@@ -86,20 +160,20 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Create Account",
+          "Создать аккаунт",
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.secondaryText),
         ),
         const SizedBox(height: 4),
         Text(
-          "Let's get started by filling out the form below.",
+          "Заполните форму ниже, чтобы начать.",
           style: TextStyle(fontSize: 14, color: AppColors.secondaryText),
         ),
         const SizedBox(height: 24),
-        _buildInputField(label: "Email"),
+        _buildInputField(label: "Email", controller: _emailController),
         const SizedBox(height: 20),
-        _buildInputField(label: "Password", isPassword: true),
+        _buildInputField(label: "Пароль", isPassword: true, controller: _passwordController),
         const SizedBox(height: 20),
-        _buildInputField(label: "Confirm password", isPassword: true),
+        _buildInputField(label: "Подтверждение пароля", isPassword: true, controller: _confirmPasswordController),
         const SizedBox(height: 32),
         SizedBox(
           width: double.infinity,
@@ -109,14 +183,9 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
             ),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-              );
-            },
+            onPressed: createAccount,
             child: const Text(
-              "Get Started",
+              "Зарегистрироваться",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
           ),
@@ -131,13 +200,13 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Log In",
+          "Войти",
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryText),
         ),
         const SizedBox(height: 24),
-        _buildInputField(label: "Email"),
+        _buildInputField(label: "Email", controller: _emailController),
         const SizedBox(height: 20),
-        _buildInputField(label: "Password", isPassword: true),
+        _buildInputField(label: "Пароль", isPassword: true, controller: _passwordController),
         const SizedBox(height: 32),
         SizedBox(
           width: double.infinity,
@@ -147,14 +216,9 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
             ),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-              );
-            },
+            onPressed: login,
             child: const Text(
-              "Log In",
+              "Войти",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.primaryText),
             ),
           ),
@@ -163,8 +227,9 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildInputField({required String label, bool isPassword = false}) {
+  Widget _buildInputField({required String label, bool isPassword = false, TextEditingController? controller}) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
         labelText: label,
