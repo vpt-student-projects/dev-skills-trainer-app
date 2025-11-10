@@ -1,0 +1,3 @@
+[submodule "dev-skills-trainer-app"]
+	path = dev-skills-trainer-app
+	url = https://github.com/vpt-student-projects/dev-skills-trainer-app.git
