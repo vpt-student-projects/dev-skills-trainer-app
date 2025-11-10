@@ -1,0 +1,6 @@
+@VPT_Learn_HostAddress = http://localhost:5230
+
+GET {{VPT_Learn_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
