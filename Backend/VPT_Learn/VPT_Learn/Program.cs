@@ -1,4 +1,6 @@
 
+using Supabase;
+
 namespace VPT_Learn
 {
     public class Program
@@ -13,7 +15,15 @@ namespace VPT_Learn
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
+            var url = Environment.GetEnvironmentVariable("SUPABASE_URL");
+            var key = Environment.GetEnvironmentVariable("SUPABASE_KEY");
+            builder.Services.AddScoped<Supabase.Client>(_ =>
+                new Supabase.Client(url,key,
+                    new SupabaseOptions
+                    {
+                        AutoRefreshToken = true,
+                        AutoConnectRealtime = true
+                    }));
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
