@@ -77,7 +77,6 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       final res = await supabase.auth.signInWithPassword(email: email, password: password);
       final user = res.user;
       if (user != null) {
-        // Получение роли пользователя из таблицы users
         final userData = await supabase
             .from('users')
             .select('role')
