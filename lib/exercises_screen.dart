@@ -1,10 +1,12 @@
+// ignore_for_file: library_private_types_in_public_api, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ExercisesScreen extends StatefulWidget {
   final int lessonId;
 
-  const ExercisesScreen({Key? key, required this.lessonId}) : super(key: key);
+  const ExercisesScreen({super.key, required this.lessonId});
 
   @override
   _ExercisesScreenState createState() => _ExercisesScreenState();
@@ -71,7 +73,6 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
         _showResult = true;
       });
     }
-    print('Selected: "${_selectedAnswer}", Right: "${currentExercise.rightAnswer}"');
   }
 
   void _restartQuiz() {

@@ -38,7 +38,6 @@ class _LearningTabState extends State<LearningTab> {
         isLoading = false;
       });
     } catch (error) {
-      print('Ошибка при загрузке курсов: $error');
       setState(() {
         isLoading = false;
       });

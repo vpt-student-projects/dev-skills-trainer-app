@@ -1,12 +1,14 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'exercises_screen.dart'; // Импорт экрана с тестом
+import 'exercises_screen.dart';
 
 class LessonsScreen extends StatefulWidget {
   final int courseId;
 
-  const LessonsScreen({Key? key, required this.courseId}) : super(key: key);
+  const LessonsScreen({super.key, required this.courseId});
 
   @override
   _LessonsScreenState createState() => _LessonsScreenState();

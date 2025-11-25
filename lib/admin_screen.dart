@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme.dart';
@@ -29,7 +31,6 @@ class _AdminScreenState extends State<AdminScreen> {
         emails = data.map((e) => e['email'] as String).toList();
       });
     } catch (error) {
-      print('Ошибка при загрузке пользователей: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Ошибка при загрузке пользователей'), backgroundColor: Colors.red),
       );
