@@ -1,105 +1,50 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'user_administration_screen.dart';
 import 'theme.dart';
+import 'admin_courses_screen.dart';
+import 'admin_users_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
 
   @override
-  _AdminScreenState createState() => _AdminScreenState();
+  State<AdminScreen> createState() => _AdminScreenState();
 }
 
 class _AdminScreenState extends State<AdminScreen> {
-  final supabase = Supabase.instance.client;
-  List<String> emails = [];
-  bool _isLoading = true;
+  int _currentIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    fetchUsers();
-  }
+  final List<Widget> _pages = const [
+    AdminUsersScreen(),
+    AdminCoursesScreen(),
+  ];
 
-  Future<void> fetchUsers() async {
+  void _onItemTapped(int index) {
     setState(() {
-      _isLoading = true;
+      _currentIndex = index;
     });
-    try {
-      final data = await supabase.from('users').select('email') as List<dynamic>;
-      setState(() {
-        emails = data.map((e) => e['email'] as String).toList();
-      });
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Ошибка при загрузке пользователей'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Список пользователей'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: fetchUsers,
-            tooltip: 'Обновить',
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        backgroundColor: AppColors.primaryBackground,
+        selectedItemColor: AppColors.alternate,
+        unselectedItemColor: AppColors.secondaryText,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Пользователи',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book),
+            label: 'Курсы',
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : emails.isEmpty
-              ? Center(
-                  child: Text(
-                    'Пользователи не найдены',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: emails.length,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      elevation: 3,
-                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: AppColors.secondaryText,
-                          child: Text(
-                            emails[index][0].toUpperCase(),
-                            style: const TextStyle(color: AppColors.secondary),
-                          ),
-                        ),
-                        title: Text(
-                          emails[index],
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => UserAdministrationScreen(email: emails[index]),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
     );
   }
 }

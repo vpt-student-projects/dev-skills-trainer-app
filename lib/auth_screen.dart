@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
-import 'admin_screen.dart';
 import 'theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'admin_screen.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});

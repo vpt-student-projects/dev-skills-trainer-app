@@ -12,7 +12,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  int _currentIndex = 0;
 
   final List<Widget> _pages = const [
     LearningTab(),
@@ -22,16 +22,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      _currentIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
+        currentIndex: _currentIndex,
         onTap: _onItemTapped,
         backgroundColor: AppColors.primaryBackground,
         selectedItemColor: AppColors.alternate,
