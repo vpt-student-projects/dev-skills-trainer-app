@@ -9,19 +9,14 @@ namespace VPT_Learn.Controllers
     [Route("api/auth")]
     public class AuthController : ControllerBase
     {
-        private readonly Supabase.Client _client;
 
-        public AuthController(Supabase.Client client)
-        {
-            _client = client;
-        }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto dto, [FromServices] Supabase.Client supabase)
         {
             try
             {
-                var result = await _client.Auth.SignUp(dto.Email, dto.Password);
+                var result = await supabase.Auth.SignUp(dto.Email, dto.Password);
 
                 if (result.User == null)
                     return BadRequest("Не удалось зарегистрировать пользователя");
@@ -44,16 +39,16 @@ namespace VPT_Learn.Controllers
 
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto, [FromServices] Supabase.Client supabase)
         {
             try
             {
-                var result = await _client.Auth.SignInWithPassword(dto.Email, dto.Password);
+                var result = await supabase.Auth.SignInWithPassword(dto.Email, dto.Password);
 
                 if (result.User == null)
                     return Unauthorized("Неверный email или пароль");
                
-                await _client.Auth.SetSession(result.AccessToken, result.RefreshToken, true);
+               // await supabase.Auth.SetSession(result.AccessToken, result.RefreshToken, true);
 
                 return Ok(new
                 {

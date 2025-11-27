@@ -1,37 +1,37 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Supabase;
+using Supabase.Gotrue;
+using Supabase.Gotrue.Interfaces;
 using VPT_Learn.Models;
 
 namespace VPT_Learn.Controllers
 {
     [ApiController]
     [Route("api/user")]
+
     public class UserController : ControllerBase
     {
-        private readonly Supabase.Client _client;
-
-        public UserController(Supabase.Client client)
+        private readonly Supabase.Client _supabase;
+        public UserController([FromServices] Supabase.Client supabase)
         {
-            _client = client;
+            _supabase = supabase;
         }
 
         [HttpGet("current")]
         public async Task<IActionResult> Current()
         {
-            var session = _client.Auth.CurrentSession;
+            var user = HttpContext.Items["SupabaseUser"] as Supabase.Gotrue.User;
+            
+            if (user == null)
+                return Unauthorized("Bearer token missing");
 
-            if (session == null)
-                return Unauthorized("Нет активной сессии");
+            var uid = user.Id;
 
-            var uid = session.User.Id;
+            var userdata = await _supabase
+                .From<Models.User>().Get(); //.Filter("user_uuid", Supabase.Postgrest.Constants.Operator.Equals, user.Id).Single();
 
-            var user = await _client
-                .From<User>()
-                .Select("*")
-                .Filter("user_uuid", Supabase.Postgrest.Constants.Operator.Equals, uid)
-                .Single();
-
-            return Ok(user);
+            return Ok(userdata.Content);
         }
+
     }
 }
