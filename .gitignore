@@ -358,3 +358,4 @@ MigrationBackup/
 
 # End of https://www.toptal.com/developers/gitignore/api/vs
 *.env
+/Backend/ConsoleApp1
