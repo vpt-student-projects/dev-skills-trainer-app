@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'theme.dart';
+import '../theme.dart';
 import 'admin_courses_screen.dart';
 import 'admin_users_screen.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'theme.dart';
+import '../theme.dart';
 
 class KnowledgeBasePage extends StatelessWidget {
   const KnowledgeBasePage({super.key});

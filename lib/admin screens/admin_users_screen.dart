@@ -2,39 +2,40 @@
 
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'theme.dart';
+import 'user_administration_screen.dart';
+import '../theme.dart';
 
-class AdminCoursesScreen extends StatefulWidget {
-  const AdminCoursesScreen({super.key});
+class AdminUsersScreen extends StatefulWidget {
+  const AdminUsersScreen({super.key});
 
   @override
-  _AdminCoursesScreenState createState() => _AdminCoursesScreenState();
+  _AdminUsersScreenState createState() => _AdminUsersScreenState();
 }
 
-class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
+class _AdminUsersScreenState extends State<AdminUsersScreen> {
   final supabase = Supabase.instance.client;
-  List<String> courses = [];
+  List<String> emails = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    fetchCourses();
+    fetchUsers();
   }
 
-  Future<void> fetchCourses() async {
+  Future<void> fetchUsers() async {
     setState(() {
       _isLoading = true;
     });
     try {
-      final data = await supabase.from('courses').select('title') as List<dynamic>;
+      final data = await supabase.from('users').select('email') as List<dynamic>;
       setState(() {
-        courses = data.map((e) => e['title'] as String).toList();
+        emails = data.map((e) => e['email'] as String).toList();
       });
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Ошибка при загрузке курсов'),
+          content: Text('Ошибка при загрузке пользователей'),
           backgroundColor: Colors.red,
         ),
       );
@@ -49,44 +50,51 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Список курсов'),
+        title: const Text('Список пользователей'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: fetchCourses,
+            onPressed: fetchUsers,
             tooltip: 'Обновить',
           ),
         ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : courses.isEmpty
+          : emails.isEmpty
               ? Center(
                   child: Text(
-                    'Курсы не найдены',
+                    'Пользователи не найдены',
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(8),
-                  itemCount: courses.length,
+                  itemCount: emails.length,
                   itemBuilder: (context, index) {
                     return Card(
                       elevation: 3,
                       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       child: ListTile(
                         leading: CircleAvatar(
                           backgroundColor: AppColors.secondaryText,
                           child: Text(
-                            courses[index][0].toUpperCase(),
+                            emails[index][0].toUpperCase(),
                             style: const TextStyle(color: AppColors.secondary),
                           ),
                         ),
                         title: Text(
-                          courses[index],
+                          emails[index],
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserAdministrationScreen(email: emails[index]),
+                            ),
+                          );
                         },
                       ),
                     );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'courses_screen.dart';
 import 'information_base_screen.dart';
 import 'profile_screen.dart';
-import 'theme.dart';
+import '../theme.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

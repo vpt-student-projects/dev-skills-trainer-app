@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'auth_screen.dart';
-import 'theme.dart';
+import '../theme.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
