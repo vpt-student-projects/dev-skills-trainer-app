@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import '../theme.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../admin screens/admin_screen.dart';
 
 class AuthPage extends StatefulWidget {
@@ -11,13 +10,14 @@ class AuthPage extends StatefulWidget {
   State<AuthPage> createState() => _AuthPageState();
 }
 
-class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
+class _AuthPageState extends State<AuthPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final supabase = Supabase.instance.client;
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -35,7 +35,6 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   }
 
   Future<void> createAccount() async {
-    final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
@@ -46,67 +45,24 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       return;
     }
 
-    try {
-      final res = await supabase.auth.signUp(email: email, password: password);
-      if (res.user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Не удалось зарегистрироваться')),
-        );
-      }
-    } on AuthException catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка регистрации: ${error.message}')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Неизвестная ошибка: $e')),
-      );
-    }
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
+    );
   }
 
   Future<void> login() async {
     final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
 
-    try {
-      final res = await supabase.auth.signInWithPassword(email: email, password: password);
-      final user = res.user;
-      if (user != null) {
-        final userData = await supabase
-            .from('users')
-            .select('role')
-            .eq('email', email)
-            .limit(1)
-            .maybeSingle();
-
-        if (userData != null && (userData['role'] == 'админ' || userData['role'] == 'admin')) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const AdminScreen()),
-          );
-          return;
-        }
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Не удалось войти')),
-        );
-      }
-    } on AuthException catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка входа: ${error.message}')),
+    if (email.toLowerCase().contains('admin')) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AdminScreen()),
       );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Неизвестная ошибка: $e')),
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     }
   }
@@ -175,7 +131,11 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       children: [
         Text(
           "Создать аккаунт",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.secondaryText),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppColors.secondaryText,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
@@ -185,9 +145,17 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         const SizedBox(height: 24),
         _buildInputField(label: "Email", controller: _emailController),
         const SizedBox(height: 20),
-        _buildInputField(label: "Пароль", isPassword: true, controller: _passwordController),
+        _buildInputField(
+          label: "Пароль",
+          isPassword: true,
+          controller: _passwordController,
+        ),
         const SizedBox(height: 20),
-        _buildInputField(label: "Подтверждение пароля", isPassword: true, controller: _confirmPasswordController),
+        _buildInputField(
+          label: "Подтверждение пароля",
+          isPassword: true,
+          controller: _confirmPasswordController,
+        ),
         const SizedBox(height: 32),
         SizedBox(
           width: double.infinity,
@@ -195,7 +163,9 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
             ),
             onPressed: createAccount,
             child: const Text(
@@ -215,12 +185,20 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       children: [
         Text(
           "Войти",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryText),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primaryText,
+          ),
         ),
         const SizedBox(height: 24),
         _buildInputField(label: "Email", controller: _emailController),
         const SizedBox(height: 20),
-        _buildInputField(label: "Пароль", isPassword: true, controller: _passwordController),
+        _buildInputField(
+          label: "Пароль",
+          isPassword: true,
+          controller: _passwordController,
+        ),
         const SizedBox(height: 32),
         SizedBox(
           width: double.infinity,
@@ -228,12 +206,18 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
             ),
             onPressed: login,
             child: const Text(
               "Войти",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.primaryText),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryText,
+              ),
             ),
           ),
         ),
@@ -241,7 +225,11 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildInputField({required String label, bool isPassword = false, TextEditingController? controller}) {
+  Widget _buildInputField({
+    required String label,
+    bool isPassword = false,
+    TextEditingController? controller,
+  }) {
     return TextField(
       controller: controller,
       obscureText: isPassword,

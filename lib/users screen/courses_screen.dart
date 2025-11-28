@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme.dart';
 import 'lessons_screen.dart';
 
@@ -11,38 +10,28 @@ class LearningTab extends StatefulWidget {
 }
 
 class _LearningTabState extends State<LearningTab> {
-  List<Course> courses = [];
-  bool isLoading = true;
-  final supabase = Supabase.instance.client;
+  List<Course> courses = const [
+    Course(
+      id: 1,
+      title: 'Основы Flutter',
+      description: 'Изучите базовые виджеты и структуру приложения.',
+      progress: 0.3,
+    ),
+    Course(
+      id: 2,
+      title: 'Продвинутый Dart',
+      description: 'Глубокое погружение в язык Dart и его фичи.',
+      progress: 0.6,
+    ),
+    Course(
+      id: 3,
+      title: 'Работа с БД',
+      description: 'Основы работы с локальными и удалёнными БД.',
+      progress: 0.0,
+    ),
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    fetchCourses();
-  }
-
-  Future<void> fetchCourses() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      final data = await supabase.from('courses').select();
-      setState(() {
-        courses = (data as List<dynamic>).map((e) => Course(
-          id: (e['course_id'] != null) ? e['course_id'] as int : 0,
-          title: e['title'] ?? '',
-          description: e['description'] ?? '',
-          progress: (e['progress'] as num?)?.toDouble() ?? 0.0,
-        )).toList();
-        isLoading = false;
-      });
-    } catch (error) {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
+  bool isLoading = false;
 
   void _openLessonsScreen(int courseId) {
     Navigator.push(
@@ -53,12 +42,22 @@ class _LearningTabState extends State<LearningTab> {
     );
   }
 
+  Future<void> _refresh() async {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Обучение'),
         backgroundColor: AppColors.secondary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _refresh,
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

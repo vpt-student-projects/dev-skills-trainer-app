@@ -1,7 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'user_administration_screen.dart';
 import '/theme.dart';
 
@@ -13,37 +12,16 @@ class AdminUsersScreen extends StatefulWidget {
 }
 
 class _AdminUsersScreenState extends State<AdminUsersScreen> {
-  final supabase = Supabase.instance.client;
-  List<String> emails = [];
-  bool _isLoading = true;
+  List<String> emails = [
+    'user1@example.com',
+    'user2@example.com',
+    'user3@example.com',
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    fetchUsers();
-  }
+  final bool _isLoading = false;
 
-  Future<void> fetchUsers() async {
-    setState(() {
-      _isLoading = true;
-    });
-    try {
-      final data = await supabase.from('users').select('email') as List<dynamic>;
-      setState(() {
-        emails = data.map((e) => e['email'] as String).toList();
-      });
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Ошибка при загрузке пользователей'),
-          backgroundColor: Colors.red,
-        ), 
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+  Future<void> _refresh() async {
+    setState(() {});
   }
 
   @override
@@ -54,7 +32,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: fetchUsers,
+            onPressed: _refresh,
             tooltip: 'Обновить',
           ),
         ],
@@ -65,34 +43,46 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               ? Center(
                   child: Text(
                     'Пользователи не найдены',
-                    style: TextStyle(fontSize: 16, color: AppColors.secondaryText),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.secondaryText,
+                    ),
                   ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(8),
                   itemCount: emails.length,
                   itemBuilder: (context, index) {
+                    final email = emails[index];
                     return Card(
                       elevation: 3,
-                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 6,
+                        horizontal: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       child: ListTile(
                         leading: CircleAvatar(
                           backgroundColor: AppColors.secondaryText,
                           child: Text(
-                            emails[index][0].toUpperCase(),
-                            style: const TextStyle(color: AppColors.secondary),
+                            email[0].toUpperCase(),
+                            style: const TextStyle(
+                              color: AppColors.secondary,
+                            ),
                           ),
                         ),
                         title: Text(
-                          emails[index],
+                          email,
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => UserAdministrationScreen(email: emails[index]),
+                              builder: (context) =>
+                                  UserAdministrationScreen(email: email),
                             ),
                           );
                         },

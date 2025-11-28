@@ -1,21 +1,17 @@
-// user_administration_screen.dart
-
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserAdministrationScreen extends StatefulWidget {
   final String email;
   const UserAdministrationScreen({super.key, required this.email});
 
   @override
-  _UserAdministrationScreenState createState() => _UserAdministrationScreenState();
+  _UserAdministrationScreenState createState() =>
+      _UserAdministrationScreenState();
 }
 
 class _UserAdministrationScreenState extends State<UserAdministrationScreen> {
-  final supabase = Supabase.instance.client;
-
   final emailController = TextEditingController();
   final passwordHashController = TextEditingController();
   final roleController = TextEditingController();
@@ -24,81 +20,43 @@ class _UserAdministrationScreenState extends State<UserAdministrationScreen> {
   bool _loading = false;
   bool _saving = false;
 
-  Future<void> loadUserData() async {
+  @override
+  void initState() {
+    super.initState();
+    _loadMockData();
+  }
+
+  void _loadMockData() {
     setState(() {
       _loading = true;
     });
 
-    try {
-      final user = await supabase
-          .from('users')
-          .select()
-          .eq('email', widget.email)
-          .maybeSingle();
-
-      if (user != null) {
-        emailController.text = user['email'] ?? '';
-        passwordHashController.text = user['password_hash'] ?? '';
-        roleController.text = user['role'] ?? '';
-        userUuidController.text = user['user_uuid'] ?? '';
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Пользователь не найден')),
-        );
-      }
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка загрузки данных: $error')),
-      );
-    }
+    emailController.text = widget.email;
+    passwordHashController.text = '';
+    roleController.text = 'user';
+    userUuidController.text = '00000000-0000-0000-0000-000000000000';
 
     setState(() {
       _loading = false;
     });
   }
 
-  Future<void> saveUserData() async {
+  Future<void> _saveMockData() async {
     setState(() {
       _saving = true;
     });
 
-    try {
-      final updates = {
-        'password_hash': passwordHashController.text.trim(),
-        'role': roleController.text.trim(),
-        'user_uuid': userUuidController.text.trim(),
-      };
+    await Future.delayed(const Duration(milliseconds: 500));
 
-      final response = await supabase
-          .from('users')
-          .update(updates)
-          .eq('email', emailController.text.trim());
-        
-
-      if (response.error == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Данные успешно сохранены')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка при сохранении: ${response.error!.message}')),
-        );
-      }
-    } catch (error) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка при сохранении: $error')),
+        const SnackBar(content: Text('Данные (условно) сохранены')),
       );
     }
 
     setState(() {
       _saving = false;
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    loadUserData();
   }
 
   @override
@@ -120,31 +78,36 @@ class _UserAdministrationScreenState extends State<UserAdministrationScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    readOnly: true, // email делаем нередактируемым
-                  ),
-                  TextFormField(
-                    controller: passwordHashController,
-                    decoration: const InputDecoration(labelText: 'Password Hash'),
-                  ),
-                  TextFormField(
-                    controller: roleController,
-                    decoration: const InputDecoration(labelText: 'Role'),
-                  ),
-                  TextFormField(
-                    controller: userUuidController,
-                    decoration: const InputDecoration(labelText: 'User UUID'),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _saving ? null : saveUserData,
-                    child: Text(_saving ? 'Сохраняем...' : 'Сохранить'),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: emailController,
+                      decoration: const InputDecoration(labelText: 'Email'),
+                      readOnly: true,
+                    ),
+                    TextFormField(
+                      controller: passwordHashController,
+                      decoration: const InputDecoration(
+                        labelText: 'Password Hash',
+                      ),
+                    ),
+                    TextFormField(
+                      controller: roleController,
+                      decoration: const InputDecoration(labelText: 'Role'),
+                    ),
+                    TextFormField(
+                      controller: userUuidController,
+                      decoration:
+                          const InputDecoration(labelText: 'User UUID'),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _saving ? null : _saveMockData,
+                      child: Text(_saving ? 'Сохраняем...' : 'Сохранить'),
+                    ),
+                  ],
+                ),
               ),
             ),
     );

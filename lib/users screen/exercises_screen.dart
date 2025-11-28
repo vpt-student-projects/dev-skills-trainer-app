@@ -1,7 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api, deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ExercisesScreen extends StatefulWidget {
   final int lessonId;
@@ -13,12 +12,28 @@ class ExercisesScreen extends StatefulWidget {
 }
 
 class _ExercisesScreenState extends State<ExercisesScreen> {
-  final supabase = Supabase.instance.client;
+  final List<Exercise> _exercises = [
+    Exercise(
+      taskDescription: 'Выберите правильный вариант 1',
+      rightAnswer: 'Ответ 1',
+      answer1: 'Ответ 1',
+      answer2: 'Ответ 2',
+      answer3: 'Ответ 3',
+      answer4: 'Ответ 4',
+    ),
+    Exercise(
+      taskDescription: 'Выберите правильный вариант 2',
+      rightAnswer: 'Ответ 3',
+      answer1: 'Ответ 1',
+      answer2: 'Ответ 2',
+      answer3: 'Ответ 3',
+      answer4: 'Ответ 4',
+    ),
+  ];
 
-  List<Exercise> _exercises = [];
   int _currentIndex = 0;
   String? _selectedAnswer;
-  bool _isLoading = true;
+  final bool _isLoading = false;
   String? _errorMessage;
 
   int _score = 0;
@@ -27,35 +42,10 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
   @override
   void initState() {
     super.initState();
-    _loadExercises();
-  }
-
-  Future<void> _loadExercises() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final data = await supabase
-          .from('exercises')
-          .select('task_description, right_answer, answer_1, answer_2, answer_3, answer_4');
-      setState(() {
-        _exercises = (data as List)
-            .map((json) => Exercise.fromJson(json as Map<String, dynamic>))
-            .toList();
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Ошибка при загрузке заданий: $e';
-        _isLoading = false;
-      });
-    }
   }
 
   void _submitAnswer() {
-  if (_selectedAnswer == null) return;
+    if (_selectedAnswer == null) return;
 
     final currentExercise = _exercises[_currentIndex];
     if (_selectedAnswer!.trim().toLowerCase() ==
@@ -113,7 +103,8 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
             children: [
               Text(
                 'Вы набрали $_score из ${_exercises.length}',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
@@ -145,7 +136,8 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
           children: [
             Text(
               currentExercise.taskDescription,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              style:
+                  const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 24),
             ...options.map(
@@ -164,7 +156,11 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
             Center(
               child: ElevatedButton(
                 onPressed: _selectedAnswer == null ? null : _submitAnswer,
-                child: Text(_currentIndex + 1 == _exercises.length ? 'Завершить' : 'Далее'),
+                child: Text(
+                  _currentIndex + 1 == _exercises.length
+                      ? 'Завершить'
+                      : 'Далее',
+                ),
               ),
             ),
           ],
@@ -190,15 +186,4 @@ class Exercise {
     required this.answer3,
     required this.answer4,
   });
-
-  factory Exercise.fromJson(Map<String, dynamic> json) {
-    return Exercise(
-      taskDescription: json['task_description'] as String? ?? '',
-      rightAnswer: json['right_answer'] as String? ?? '',
-      answer1: json['answer_1'] as String? ?? '',
-      answer2: json['answer_2'] as String? ?? '',
-      answer3: json['answer_3'] as String? ?? '',
-      answer4: json['answer_4'] as String? ?? '',
-    );
-  }
 }

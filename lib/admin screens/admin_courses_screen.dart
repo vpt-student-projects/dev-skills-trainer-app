@@ -1,7 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'admin_lessons_screen.dart';
 import '/theme.dart';
 
@@ -9,45 +6,20 @@ class AdminCoursesScreen extends StatefulWidget {
   const AdminCoursesScreen({super.key});
 
   @override
-  _AdminCoursesScreenState createState() => _AdminCoursesScreenState();
+  State<AdminCoursesScreen> createState() => _AdminCoursesScreenState();
 }
 
 class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
-  final supabase = Supabase.instance.client;
-  List<Map<String, dynamic>> courses = [];
-  bool _isLoading = true;
+  final List<Map<String, dynamic>> courses = [
+    {'course_id': 1, 'title': 'Курс 1'},
+    {'course_id': 2, 'title': 'Курс 2'},
+    {'course_id': 3, 'title': 'Курс 3'},
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    fetchCourses();
-  }
+  final bool _isLoading = false; 
 
-  Future<void> fetchCourses() async {
-    setState(() {
-      _isLoading = true;
-    });
-    try {
-      final data = await supabase
-          .from('courses')
-          .select('course_id, title')
-          .order('course_id', ascending: true) as List<dynamic>;
-      
-      setState(() {
-        courses = data.cast<Map<String, dynamic>>();
-      });
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Ошибка при загрузке курсов'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+  Future<void> _refresh() async {
+    setState(() {});
   }
 
   @override
@@ -58,7 +30,7 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: fetchCourses,
+            onPressed: _refresh,
             tooltip: 'Обновить',
           ),
         ],
@@ -69,7 +41,10 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
               ? Center(
                   child: Text(
                     'Курсы не найдены',
-                    style: TextStyle(fontSize: 16, color: AppColors.secondaryText),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.secondaryText,
+                    ),
                   ),
                 )
               : ListView.builder(
@@ -79,11 +54,16 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
                     final course = courses[index];
                     return Card(
                       elevation: 3,
-                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 6,
+                        horizontal: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       child: ListTile(
                         title: Text(
-                          course['title'],
+                          course['title'] as String,
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         onTap: () {
