@@ -1,18 +1,19 @@
-﻿
-    using Microsoft.AspNetCore.Mvc;
+﻿    using Microsoft.AspNetCore.Mvc;
+    using VPT_Learn.Models;
+
     using Supabase;
     using Supabase.Gotrue;
-    using VPT_Learn.Models;
+
 namespace VPT_Learn.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthController : ControllerBase
+    public partial class AuthController : ControllerBase
     {
 
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto dto, [FromServices] Supabase.Client supabase)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO dto, [FromServices] Supabase.Client supabase)
         {
             try
             {
@@ -39,7 +40,7 @@ namespace VPT_Learn.Controllers
 
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto, [FromServices] Supabase.Client supabase)
+        public async Task<IActionResult> Login([FromBody] LoginDTO dto, [FromServices] Supabase.Client supabase)
         {
             try
             {
@@ -62,18 +63,6 @@ namespace VPT_Learn.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
-        }
-
-
-        public class RegisterDto
-        {
-            public string Email { get; set; }
-            public string Password { get; set; }
-        }
-        public class LoginDto
-        {
-            public string Email { get; set; }
-            public string Password { get; set; }
         }
     }
 }
