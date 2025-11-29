@@ -32,6 +32,11 @@ namespace VPT_Learn.Controllers
 
             return Ok(userdata.Content);
         }
+        [HttpPost("update")]
+        public async Task<IActionResult> Update()
+        {
+            return Ok();
+        }
 
     }
 }
