@@ -1,9 +1,9 @@
-﻿using Supabase.Postgrest.Models;
+﻿
 
 namespace VPT_Learn.Models
 {
 
-        public class RegisterDTO : BaseModel
+        public class RegisterDTO 
     
         {
             public string Email { get; set; }

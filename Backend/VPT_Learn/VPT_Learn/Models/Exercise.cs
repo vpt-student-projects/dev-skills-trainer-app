@@ -17,6 +17,11 @@ namespace VPT_Learn.Models
 
         [Column("right_answer")]
         public string? RightAnswer { get; set; }
+        [Column("order_index")]
+        public int OrderIndex { get; set; }
+
+        [Column("type")]
+        public string Type { get; set; }
 
     }
 }

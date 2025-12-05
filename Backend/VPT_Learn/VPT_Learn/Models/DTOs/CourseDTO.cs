@@ -1,9 +1,8 @@
-﻿using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
+﻿
 namespace VPT_Learn.Models
 {
 
-    public class CourseDTO : BaseModel
+    public class CourseDTO 
     {
         public int CourseId { get; set; }
 

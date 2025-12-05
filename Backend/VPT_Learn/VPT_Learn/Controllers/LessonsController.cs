@@ -47,7 +47,32 @@ namespace VPT_Learn.Controllers
                 exercises = exercises
             });
         }
+        [HttpGet("alllessons")]
+        [Tags("Tasks Management")]
 
+        public async Task<IActionResult> AllLesssons([FromQuery] int courseid)
+        {
+            var user = HttpContext.Items["SupabaseUser"] as Supabase.Gotrue.User;
+            if (user == null)
+                return Unauthorized("Bearer token missing");
+
+            var data = await _supabase
+                .From<Models.Lesson>()
+                .Filter("course_id", Supabase.Postgrest.Constants.Operator.Equals, courseid)
+                .Get();
+
+            var exercises = data.Models.Select(e => new Lesson
+            {
+                
+
+            }).ToList();
+
+            return Ok(new
+            {
+                count = exercises.Count,
+                exercises = exercises
+            });
+        }
     }
 
 

@@ -58,7 +58,7 @@ namespace VPT_Learn
             builder.Configuration.AddEnvironmentVariables();
             var url = Environment.GetEnvironmentVariable("SUPABASE_URL");
             var key = Environment.GetEnvironmentVariable("SUPABASE_KEY");
-            builder.Services.AddSingleton<Supabase.Client>(_ =>
+            builder.Services.AddScoped<Supabase.Client>(_ =>
                 new Supabase.Client(url,key,
                     new SupabaseOptions
                     {

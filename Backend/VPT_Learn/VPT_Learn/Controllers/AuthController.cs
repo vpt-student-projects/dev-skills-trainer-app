@@ -49,8 +49,6 @@ namespace VPT_Learn.Controllers
                 if (result.User == null)
                     return Unauthorized("Неверный email или пароль");
                
-               // await supabase.Auth.SetSession(result.AccessToken, result.RefreshToken, true);
-
                 return Ok(new
                 {
                     userId = result.User.Id,
@@ -58,6 +56,19 @@ namespace VPT_Learn.Controllers
                     accessToken = result.AccessToken,
                     refreshToken = result.RefreshToken
                 });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+        [HttpPost("signout")]
+        public async Task<IActionResult> Signout([FromBody] LoginDTO dto, [FromServices] Supabase.Client supabase)
+        {
+            try
+            {
+                await supabase.Auth.SignOut();
+                return Ok();
             }
             catch (Exception ex)
             {

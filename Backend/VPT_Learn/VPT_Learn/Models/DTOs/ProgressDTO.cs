@@ -1,10 +1,9 @@
-﻿using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
+﻿
 
 namespace VPT_Learn.Models
 {
 
-    public class ProgressDTO : BaseModel
+    public class ProgressDTO 
     {
 
         public int ProgressId { get; set; }

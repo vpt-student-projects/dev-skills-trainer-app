@@ -1,10 +1,9 @@
-﻿using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
+﻿
 
 namespace VPT_Learn.Models
 {
 
-    public class NotificationDTO : BaseModel
+    public class NotificationDTO 
     {
 
         public int NotificationId { get; set; }

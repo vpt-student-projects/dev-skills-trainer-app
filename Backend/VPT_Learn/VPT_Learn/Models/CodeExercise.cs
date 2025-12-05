@@ -17,5 +17,7 @@ namespace VPT_Learn.Models
 
             [Column("task_description")]
             public string? TaskDescription { get; set; }
+            [Column("exercise_id")]
+            public string? ExerciseId { get; set; }
         }
 }

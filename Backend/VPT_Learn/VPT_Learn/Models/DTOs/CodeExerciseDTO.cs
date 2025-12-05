@@ -1,10 +1,8 @@
-﻿using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
-
+﻿
 namespace VPT_Learn.Models
 {
 
-        public class CodeExerciseDTO : BaseModel
+        public class CodeExerciseDTO 
         {
             public long Id { get; set; }     // FK → lessons.lesson_id (1:1)
 
