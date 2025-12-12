@@ -82,7 +82,7 @@ class _AuthPageState extends State<AuthPage>
                 const SizedBox(height: 24),
                 CircleAvatar(
                   radius: 48,
-                  backgroundColor: Colors.white12,
+                  backgroundColor: AppColors.secondaryBackground,
                   child: const Icon(Icons.book, size: 48, color: Colors.white),
                 ),
                 const SizedBox(height: 14),
@@ -103,8 +103,8 @@ class _AuthPageState extends State<AuthPage>
                     Tab(text: "Войти"),
                   ],
                   indicatorColor: AppColors.alternate,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.white54,
+                  labelColor: AppColors.alternate,
+                  unselectedLabelColor: AppColors.alternate,
                 ),
                 const SizedBox(height: 18),
                 SizedBox(
