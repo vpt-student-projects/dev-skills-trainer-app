@@ -19,6 +19,9 @@ class _AuthPageState extends State<AuthPage>
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
+  bool _passwordObscured = true;
+  bool _confirmPasswordObscured = true;
+
   @override
   void initState() {
     super.initState();
@@ -143,18 +146,33 @@ class _AuthPageState extends State<AuthPage>
           style: TextStyle(fontSize: 14, color: AppColors.secondaryText),
         ),
         const SizedBox(height: 24),
-        _buildInputField(label: "Email", controller: _emailController),
+        _buildInputField(
+          label: "Email",
+          controller: _emailController,
+        ),
         const SizedBox(height: 20),
         _buildInputField(
           label: "Пароль",
           isPassword: true,
           controller: _passwordController,
+          obscureText: _passwordObscured,
+          onToggleObscure: () {
+            setState(() {
+              _passwordObscured = !_passwordObscured;
+            });
+          },
         ),
         const SizedBox(height: 20),
         _buildInputField(
           label: "Подтверждение пароля",
           isPassword: true,
           controller: _confirmPasswordController,
+          obscureText: _confirmPasswordObscured,
+          onToggleObscure: () {
+            setState(() {
+              _confirmPasswordObscured = !_confirmPasswordObscured;
+            });
+          },
         ),
         const SizedBox(height: 32),
         SizedBox(
@@ -192,12 +210,21 @@ class _AuthPageState extends State<AuthPage>
           ),
         ),
         const SizedBox(height: 24),
-        _buildInputField(label: "Email", controller: _emailController),
+        _buildInputField(
+          label: "Email",
+          controller: _emailController,
+        ),
         const SizedBox(height: 20),
         _buildInputField(
           label: "Пароль",
           isPassword: true,
           controller: _passwordController,
+          obscureText: _passwordObscured,
+          onToggleObscure: () {
+            setState(() {
+              _passwordObscured = !_passwordObscured;
+            });
+          },
         ),
         const SizedBox(height: 32),
         SizedBox(
@@ -229,10 +256,12 @@ class _AuthPageState extends State<AuthPage>
     required String label,
     bool isPassword = false,
     TextEditingController? controller,
+    bool obscureText = false,
+    VoidCallback? onToggleObscure,
   }) {
     return TextField(
       controller: controller,
-      obscureText: isPassword,
+      obscureText: isPassword ? obscureText : false,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
@@ -242,7 +271,13 @@ class _AuthPageState extends State<AuthPage>
           borderSide: BorderSide.none,
         ),
         suffixIcon: isPassword
-            ? Icon(Icons.visibility_off, color: AppColors.secondaryText)
+            ? IconButton(
+                icon: Icon(
+                  obscureText ? Icons.visibility_off : Icons.visibility,
+                  color: AppColors.secondaryText,
+                ),
+                onPressed: onToggleObscure,
+              )
             : null,
         labelStyle: TextStyle(color: AppColors.secondaryText),
       ),
