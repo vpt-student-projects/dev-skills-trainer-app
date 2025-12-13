@@ -29,12 +29,7 @@ public class SupabaseAuthMiddleware
 
             try
             {
-                // Проверка токена через Supabase
-                var user = await supabase.Auth.GetUser(token);
-                if (user != null)
-                {
-                    context.Items["SupabaseUser"] = user;
-                }
+                context.Items["SupabaseAccessToken"] = token;
             }
             catch (Exception ex)
             {

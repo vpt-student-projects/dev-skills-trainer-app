@@ -3,6 +3,7 @@ using Supabase;
 using DotNetEnv;
 using static Supabase.Postgrest.Constants;
 using Microsoft.OpenApi.Models;
+using VPT_Learn.Controllers;
 namespace VPT_Learn
 {
     public class Program
@@ -22,10 +23,10 @@ namespace VPT_Learn
                 {
                     Title = "My Supabase API",
                     Version = "v1",
-                    Description = "API с автоматической аутентификацией Supabase"
+                    Description = "API пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Supabase"
                 });
 
-                // Добавляем безопасность JWT в Swagger
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ JWT пїЅ Swagger
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme",
@@ -52,19 +53,22 @@ namespace VPT_Learn
                     }
                 });
 
-                // Включаем XML комментарии
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ XML пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 //c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "VPT_Learn.xml"));
             });
             builder.Configuration.AddEnvironmentVariables();
             var url = Environment.GetEnvironmentVariable("SUPABASE_URL");
             var key = Environment.GetEnvironmentVariable("SUPABASE_KEY");
-            builder.Services.AddScoped<Supabase.Client>(_ =>
+
+            builder.Services.AddSingleton<Supabase.Client>(_ =>
                 new Supabase.Client(url,key,
                     new SupabaseOptions
                     {
                         AutoRefreshToken = true,
                         AutoConnectRealtime = true
                     }));
+            builder.Services.AddScoped<ISupabaseUserClientFactory, SupabaseUserClientFactory>();
+
             var app = builder.Build();
             app.UseMiddleware<SupabaseAuthMiddleware>();
 
@@ -81,9 +85,9 @@ namespace VPT_Learn
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                c.RoutePrefix = string.Empty; // Swagger UI доступен по корневому URL
+                c.RoutePrefix = string.Empty; // Swagger UI пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ URL
             });
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
 

@@ -7,21 +7,21 @@ namespace VPT_Learn.Controllers
     [Route("api/courses")]
     public class CourseController : ControllerBase
     {
-        private readonly Supabase.Client _supabase;
-        public CourseController([FromServices] Supabase.Client supabase)
+        private readonly ISupabaseUserClientFactory _clientFactory;
+
+        public CourseController(ISupabaseUserClientFactory clientFactory)
         {
-            _supabase = supabase;
+            _clientFactory = clientFactory;
         }
         [HttpGet("allcourses")]
         [Tags("Courses Management")]
 
         public async Task<IActionResult> AllCourses()
         {
-            var user = HttpContext.Items["SupabaseUser"] as Supabase.Gotrue.User;
-            if (user == null)
-                return Unauthorized("Bearer token missing");
+            var client = await _clientFactory.CreateAsync(HttpContext);
 
-            var data = await _supabase
+
+            var data = await client
                 .From<Models.Course>().Get();
 
             var courses = data.Models.Select(e => new CourseDTO

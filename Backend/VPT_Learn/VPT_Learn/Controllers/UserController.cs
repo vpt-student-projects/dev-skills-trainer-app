@@ -11,21 +11,18 @@ namespace VPT_Learn.Controllers
 
     public class UserController : ControllerBase
     {
-        private readonly Supabase.Client _supabase;
-        public UserController([FromServices] Supabase.Client supabase)
-        {
-            _supabase = supabase;
-        }
+
 
         [HttpGet("current")]
         public async Task<IActionResult> Current()
         {
             var user = HttpContext.Items["SupabaseUser"] as Supabase.Gotrue.User;
-            
-            if (user == null)
+            var client = HttpContext.Items["SupabaseCLient"] as Supabase.Client;
+
+            if (user == null || client == null)
                 return Unauthorized("Bearer token missing");
 
-            var userdata = await _supabase.From<Models.User>().Get(); //.Filter("user_uuid", Supabase.Postgrest.Constants.Operator.Equals, user.Id).Single();
+            var userdata = await client.From<Models.User>().Get(); //.Filter("user_uuid", Supabase.Postgrest.Constants.Operator.Equals, user.Id).Single();
 
             return Ok(userdata.Content);
         }
@@ -33,8 +30,10 @@ namespace VPT_Learn.Controllers
         public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
         {
             var user = HttpContext.Items["SupabaseUser"] as Supabase.Gotrue.User;
+            var client = HttpContext.Items["SupabaseCLient"] as Supabase.Client;
 
-            if (user == null)
+
+            if (user == null && client == null)
                 return Unauthorized("Bearer token missing");
 
             if (string.IsNullOrEmpty(request.NewPassword) || request.NewPassword.Length < 6)
@@ -43,7 +42,7 @@ namespace VPT_Learn.Controllers
             try
             {
                 var attrs = new UserAttributes { Password = request.NewPassword };
-                var response = await _supabase.Auth.Update(attrs);
+                var response = await client.Auth.Update(attrs);
 
                 if (response == null)
                     return BadRequest(new { error = "error" });
@@ -69,10 +68,12 @@ namespace VPT_Learn.Controllers
         public async Task<IActionResult> UpdateEmail([FromBody] string email)
         {
             var user = HttpContext.Items["SupabaseUser"] as Supabase.Gotrue.User;
-            if (user == null)
+            var client = HttpContext.Items["SupabaseCLient"] as Supabase.Client;
+
+            if (user == null && client == null)
                 return Unauthorized("Bearer token missing");
             var attrs = new UserAttributes { Email = email };
-            var response = await _supabase.Auth.Update(attrs);
+            var response = await client.Auth.Update(attrs);
             return Ok();
         }
 

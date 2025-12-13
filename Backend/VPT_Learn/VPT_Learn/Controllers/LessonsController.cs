@@ -12,23 +12,37 @@ namespace VPT_Learn.Controllers
 
     public class LessonsController : ControllerBase
     {
-        private readonly Supabase.Client _supabase;
-        public LessonsController([FromServices] Supabase.Client supabase)
+
+        private readonly ISupabaseUserClientFactory _clientFactory;
+
+        public LessonsController(ISupabaseUserClientFactory clientFactory)
         {
-            _supabase = supabase;
+            _clientFactory = clientFactory;
+        }
+        private Supabase.Client CreateUserClient(string accessToken)
+        {
+            var options = new SupabaseOptions
+            {
+                AutoRefreshToken = false,
+            };
+
+            return new Supabase.Client(
+                Environment.GetEnvironmentVariable("SUPABASE_URL"),
+                accessToken,
+                options
+            );
         }
 
-        [HttpGet("alltasks")]
         [Tags("Tasks Management")]
-
+        [HttpGet("alltasks")]
         public async Task<IActionResult> AllTasks([FromQuery] int lessonId)
         {
-            var user = HttpContext.Items["SupabaseUser"] as Supabase.Gotrue.User;
-            if (user == null)
-                return Unauthorized("Bearer token missing");
 
-            var data = await _supabase
-                .From<Models.Exercise>()
+            var client = await _clientFactory.CreateAsync(HttpContext);
+
+
+            var data = await client
+                .From<Exercise>()
                 .Filter("lesson_id", Supabase.Postgrest.Constants.Operator.Equals, lessonId)
                 .Get();
 
@@ -37,40 +51,40 @@ namespace VPT_Learn.Controllers
                 ExerciseId = e.ExerciseId,
                 LessonId = e.LessonId,
                 TaskDescription = e.TaskDescription,
-                RightAnswer = e.RightAnswer,
-                
-            }).ToList();
+                RightAnswer = e.RightAnswer
+            });
 
             return Ok(new
             {
-                count = exercises.Count,
-                exercises = exercises
+                count = exercises.Count(),
+                exercises
             });
         }
+
         [HttpGet("alllessons")]
         [Tags("Tasks Management")]
 
         public async Task<IActionResult> AllLesssons([FromQuery] int courseid)
         {
-            var user = HttpContext.Items["SupabaseUser"] as Supabase.Gotrue.User;
-            if (user == null)
-                return Unauthorized("Bearer token missing");
-
-            var data = await _supabase
+            var client = await _clientFactory.CreateAsync(HttpContext);
+            var data = await client
                 .From<Models.Lesson>()
                 .Filter("course_id", Supabase.Postgrest.Constants.Operator.Equals, courseid)
                 .Get();
 
-            var exercises = data.Models.Select(e => new Lesson
+            var lessons = data.Models.Select(e => new LessonDTO
             {
-                
-
+                LessonId = e.LessonId,
+                CourseId = e.CourseId,
+                Title = e.Title,
+                Content = e.Content,
+                OrderIndex = e.OrderIndex
             }).ToList();
 
             return Ok(new
             {
-                count = exercises.Count,
-                exercises = exercises
+                count = lessons.Count,
+                lessons = lessons
             });
         }
     }
