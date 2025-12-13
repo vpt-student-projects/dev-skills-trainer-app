@@ -38,6 +38,17 @@
       },
       "publishAllPorts": true,
       "useSSL": true
+    },
+    "Release": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "SUPABASE_URL": "https://your-project.supabase.co",
+        "SUPABASE_ANON_KEY": "your_anon_key_here"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://0.0.0.0:5000"
     }
   },
   "$schema": "http://json.schemastore.org/launchsettings.json",
