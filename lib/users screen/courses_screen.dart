@@ -87,7 +87,7 @@ class _LearningTabState extends State<LearningTab> {
                             const SizedBox(height: 12),
                             LinearProgressIndicator(
                               value: course.progress,
-                              backgroundColor: Colors.grey[300],
+                              backgroundColor: AppColors.alternate,
                               color: AppColors.completed,
                             ),
                             const SizedBox(height: 4),

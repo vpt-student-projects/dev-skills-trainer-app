@@ -8,29 +8,22 @@ class KnowledgeBasePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final languages = [
   {
-    'name': 'Dart',
-    'logo': 'https://upload.wikimedia.org/wikipedia/commons/7/7e/Dart-logo.png',
+    'name': 'Dart', 
   },
   {
-    'name': 'Python',
-    'logo': '',
+    'name': 'Python', 
   },
   {
-    'name': 'JavaScript',
-    'logo': 'https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png',
+    'name': 'JavaScript', 
   },
   {
     'name': 'C#',
-    'logo': 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Csharp_Logo.png',
   },
   {
-    'name': 'Java',
-    'logo': 'https://img.icons8.com/color/48/000000/java-coffee-cup-logo.png',
-  },
+    'name': 'Java',},
   {
     'name': 'C++',
-    'logo': '',
-  },
+   },
 ];
 
 
@@ -55,7 +48,7 @@ class KnowledgeBasePage extends StatelessWidget {
               ),
               title: Text(
                 language['name']!,
-                style: const TextStyle(fontSize: 20, color: Colors.white70),
+                style: const TextStyle(fontSize: 20, color: AppColors.primaryText),
               ),
             ),
           );

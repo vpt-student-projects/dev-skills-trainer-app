@@ -93,7 +93,7 @@ class ProfilePage extends StatelessWidget {
                   : null),
           onTap: onTap,
         ),
-        const Divider(color: Colors.white12, height: 1),
+        const Divider(color: AppColors.secondary, height: 1),
       ],
     );
   }
