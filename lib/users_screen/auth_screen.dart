@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
+import '../services/access_token_storage.dart';
 import 'home_screen.dart';
 import '../theme.dart';
-import '../admin screens/admin_screen.dart';
+import '../admin_screens/admin_screen.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -37,38 +39,60 @@ class _AuthPageState extends State<AuthPage>
     super.dispose();
   }
 
-  Future<void> createAccount() async {
-    final password = _passwordController.text.trim();
-    final confirmPassword = _confirmPasswordController.text.trim();
 
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Пароли не совпадают')),
-      );
-      return;
-    }
+Future<void> createAccount() async {
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
+  final confirmPassword = _confirmPasswordController.text.trim();
 
+  if (password != confirmPassword) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Пароли не совпадают')),
+    );
+    return;
+  }
+
+  try {
+    final result = await AuthService().register(email, password);
+    // После регистрации можно сохранить accessToken, userId
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const HomeScreen()),
     );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(e.toString())),
+    );
   }
+}
 
-  Future<void> login() async {
-    final email = _emailController.text.trim();
+Future<void> login() async {
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
 
+  try {
+    final result = await AuthService().login(email, password);
+    await AccessTokenStorage.save(result?['accessToken']);
+    print('Access Token saved: ${result?['accessToken']}');
+    // result содержит: userId, email, accessToken, refreshToken
     if (email.toLowerCase().contains('admin')) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const AdminScreen()),
+        MaterialPageRoute(builder: (context) =>  AdminScreen()),
       );
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) =>  HomeScreen()),
       );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(e.toString())),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

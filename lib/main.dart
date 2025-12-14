@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
-import 'users screen/auth_screen.dart';
+import 'users_screen/auth_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: ".env");
+    try {
+    // Загружаем переменные окружения из .env файла
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    // Если файл .env не найден, используем значения по умолчанию
+    print('Warning: .env file not found. Using default values.');
+  }
 
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  );
+  // await Supabase.initialize(
+  //   url: dotenv.env['SUPABASE_URL']!,
+  //   anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+  // );
 
   runApp(const MyApp());
 }
@@ -23,7 +29,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData.dark(),
-      home: const AuthPage(),
+      home:  AuthPage(),
       debugShowCheckedModeBanner: false,
     );
   }
