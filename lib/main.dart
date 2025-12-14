@@ -3,8 +3,12 @@ import 'users_screen/auth_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
 
     try {
     // Загружаем переменные окружения из .env файла
@@ -14,10 +18,7 @@ void main() async {
     print('Warning: .env file not found. Using default values.');
   }
 
-  // await Supabase.initialize(
-  //   url: dotenv.env['SUPABASE_URL']!,
-  //   anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  // );
+
 
   runApp(const MyApp());
 }
