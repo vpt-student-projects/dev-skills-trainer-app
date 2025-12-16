@@ -21,8 +21,7 @@ namespace VPT_Learn.Controllers
             var client = await _clientFactory.CreateAsync(HttpContext);
 
 
-            var data = await client
-                .From<Models.Course>().Get();
+            var data = await client.From<Models.Course>().Get();
 
             var courses = data.Models.Select(e => new CourseDTO
             {

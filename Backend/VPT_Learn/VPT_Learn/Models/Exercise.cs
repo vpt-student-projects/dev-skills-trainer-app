@@ -23,5 +23,7 @@ namespace VPT_Learn.Models
         [Column("type")]
         public string Type { get; set; }
 
+        // Для DTO: список всех ответов
+        public List<Answer> Answers { get; set; }
     }
 }

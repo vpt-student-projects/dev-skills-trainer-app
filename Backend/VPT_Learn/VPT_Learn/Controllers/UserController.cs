@@ -12,14 +12,18 @@ namespace VPT_Learn.Controllers
     public class UserController : ControllerBase
     {
 
+        private readonly ISupabaseUserClientFactory _clientFactory;
 
+        public UserController(ISupabaseUserClientFactory clientFactory)
+        {
+            _clientFactory = clientFactory;
+        }
         [HttpGet("current")]
         public async Task<IActionResult> Current()
         {
-            var user = HttpContext.Items["SupabaseUser"] as Supabase.Gotrue.User;
-            var client = HttpContext.Items["SupabaseCLient"] as Supabase.Client;
+            var client = await _clientFactory.CreateAsync(HttpContext);
 
-            if (user == null || client == null)
+            if (client == null)
                 return Unauthorized("Bearer token missing");
 
             var userdata = await client.From<Models.User>().Get(); //.Filter("user_uuid", Supabase.Postgrest.Constants.Operator.Equals, user.Id).Single();
@@ -29,11 +33,11 @@ namespace VPT_Learn.Controllers
         [HttpPost("update_password")]
         public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
         {
-            var user = HttpContext.Items["SupabaseUser"] as Supabase.Gotrue.User;
-            var client = HttpContext.Items["SupabaseCLient"] as Supabase.Client;
+            var client = await _clientFactory.CreateAsync(HttpContext);
 
 
-            if (user == null && client == null)
+
+            if (client == null)
                 return Unauthorized("Bearer token missing");
 
             if (string.IsNullOrEmpty(request.NewPassword) || request.NewPassword.Length < 6)
@@ -67,10 +71,9 @@ namespace VPT_Learn.Controllers
         [HttpPost("update_email")]
         public async Task<IActionResult> UpdateEmail([FromBody] string email)
         {
-            var user = HttpContext.Items["SupabaseUser"] as Supabase.Gotrue.User;
-            var client = HttpContext.Items["SupabaseCLient"] as Supabase.Client;
+            var client = await _clientFactory.CreateAsync(HttpContext);
 
-            if (user == null && client == null)
+            if (client == null)
                 return Unauthorized("Bearer token missing");
             var attrs = new UserAttributes { Email = email };
             var response = await client.Auth.Update(attrs);

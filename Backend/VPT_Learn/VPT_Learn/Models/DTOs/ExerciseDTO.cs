@@ -14,7 +14,9 @@ namespace VPT_Learn.Models
 
 
         public string? RightAnswer { get; set; }
+        public int OrderIndex { get; internal set; }
 
+        public List<AnswerDTO> Answers { get; set; }
     }
 
 
