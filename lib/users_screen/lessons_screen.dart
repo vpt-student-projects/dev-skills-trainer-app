@@ -1,6 +1,8 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:vpt_learn/models/lesson_model.dart';
+import 'package:vpt_learn/services/lesson_service.dart';
 import 'exercises_screen.dart';
 
 class LessonsScreen extends StatefulWidget {
@@ -13,31 +15,25 @@ class LessonsScreen extends StatefulWidget {
 }
 
 class _LessonsScreenState extends State<LessonsScreen> {
-  final bool _isLoading = false;
+
   String? _errorMessage;
-  final List<Lesson> _lessons = [
-    Lesson(
-      id: 1,
-      coursesId: 1,
-      title: 'Введение в курс',
-      content: 'Краткое описание первого урока и цели обучения.',
-    ),
-    Lesson(
-      id: 2,
-      coursesId: 1,
-      title: 'Основные понятия',
-      content: 'Подробное описание ключевых понятий курса.',
-    ),
-    Lesson(
-      id: 3,
-      coursesId: 1,
-      title: 'Практика',
-      content: 'Практические задания и примеры.',
-    ),
-  ];
+  List<LessonModel> _lessons = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLessons();
+  }
+
+  Future<void> _loadLessons() async {
+    _lessons = await LessonService().fetchLessons(widget.courseId);
+    setState(() => _isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(title: const Text('Уроки курса')),
       body: _isLoading
@@ -67,7 +63,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      ExercisesScreen(lessonId: lesson.id),
+                                      ExercisesScreen(lessonId: lesson.lessonId),
                                 ),
                               );
                             },

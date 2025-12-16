@@ -1,6 +1,8 @@
 // ignore_for_file: library_private_types_in_public_api, deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:vpt_learn/models/exercise_model.dart';
+import 'package:vpt_learn/services/lesson_service.dart';
 
 class ExercisesScreen extends StatefulWidget {
   final int lessonId;
@@ -12,28 +14,11 @@ class ExercisesScreen extends StatefulWidget {
 }
 
 class _ExercisesScreenState extends State<ExercisesScreen> {
-  final List<Exercise> _exercises = [
-    Exercise(
-      taskDescription: 'Выберите правильный вариант 1',
-      rightAnswer: 'Ответ 1',
-      answer1: 'Ответ 1',
-      answer2: 'Ответ 2',
-      answer3: 'Ответ 3',
-      answer4: 'Ответ 4',
-    ),
-    Exercise(
-      taskDescription: 'Выберите правильный вариант 2',
-      rightAnswer: 'Ответ 3',
-      answer1: 'Ответ 1',
-      answer2: 'Ответ 2',
-      answer3: 'Ответ 3',
-      answer4: 'Ответ 4',
-    ),
-  ];
-
+   List<ExerciseModel> _exercises = [];
+  LessonService ls = LessonService();
   int _currentIndex = 0;
   String? _selectedAnswer;
-  final bool _isLoading = false;
+  bool _isLoading = true;
   String? _errorMessage;
 
   int _score = 0;
@@ -42,6 +27,22 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
   @override
   void initState() {
     super.initState();
+    _loadExercises();
+  }
+
+  Future<void> _loadExercises() async {
+    try {
+       var exercises = await ls.fetchExercises(widget.lessonId);
+      setState(() {
+        _exercises = exercises;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Ошибка загрузки упражнений';
+        _isLoading = false;
+      });
+    }
   }
 
   void _submitAnswer() {
@@ -118,12 +119,7 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
     }
 
     final currentExercise = _exercises[_currentIndex];
-    final options = [
-      currentExercise.answer1,
-      currentExercise.answer2,
-      currentExercise.answer3,
-      currentExercise.answer4,
-    ];
+
 
     return Scaffold(
       appBar: AppBar(
@@ -140,13 +136,13 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
                   const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 24),
-            ...options.map(
+            ...currentExercise.options.map(
               (option) => RadioListTile<String>(
                 title: Text(option),
                 value: option,
                 groupValue: _selectedAnswer,
                 onChanged: (value) {
-                  setState(() {
+                  setState(() { 
                     _selectedAnswer = value;
                   });
                 },
@@ -157,9 +153,8 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
               child: ElevatedButton(
                 onPressed: _selectedAnswer == null ? null : _submitAnswer,
                 child: Text(
-                  _currentIndex + 1 == _exercises.length
-                      ? 'Завершить'
-                      : 'Далее',
+                _currentIndex + 1 == _exercises.length ? 'Завершить' : 'Далее',
+
                 ),
               ),
             ),
