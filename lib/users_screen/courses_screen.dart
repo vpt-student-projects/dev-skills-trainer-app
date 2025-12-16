@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:vpt_learn/models/course_model.dart';
+import 'package:vpt_learn/services/course_service.dart';
 import '../theme.dart';
 import 'lessons_screen.dart';
 
@@ -7,31 +9,30 @@ class LearningTab extends StatefulWidget {
 
   @override
   State<LearningTab> createState() => _LearningTabState();
+  
 }
 
 class _LearningTabState extends State<LearningTab> {
-  List<Course> courses = const [
-    Course(
-      id: 1,
-      title: 'Основы Flutter',
-      description: 'Изучите базовые виджеты и структуру приложения.',
-      progress: 0.3,
-    ),
-    Course(
-      id: 2,
-      title: 'Продвинутый Dart',
-      description: 'Глубокое погружение в язык Dart и его фичи.',
-      progress: 0.6,
-    ),
-    Course(
-      id: 3,
-      title: 'Работа с БД',
-      description: 'Основы работы с локальными и удалёнными БД.',
-      progress: 0.0,
-    ),
-  ];
+  List<CourseModel> courses =  [];
 
-  bool isLoading = false;
+  bool isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+    _loadCourses();
+  }
+
+  Future<void> _loadCourses() async {
+    setState(() => isLoading = true);
+
+    try {
+      courses = await CourseService().fetchCourses();
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+
+    setState(() => isLoading = false);
+  }
 
   void _openLessonsScreen(int courseId) {
     Navigator.push(
@@ -86,13 +87,13 @@ class _LearningTabState extends State<LearningTab> {
                             Text(course.description),
                             const SizedBox(height: 12),
                             LinearProgressIndicator(
-                              value: course.progress,
+                              value: course.progress ?? 0,
                               backgroundColor: AppColors.alternate,
                               color: AppColors.completed,
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${(course.progress * 100).toInt()}% завершено',
+                              '${((course.progress ?? 0) * 100).toInt()}% завершено',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.completed,
