@@ -38,16 +38,14 @@ namespace VPT_Learn.Controllers
             {
                 // Получаем все ответы для данного упражнения
                 var answersResponse = await client
-                    .From<Answer>()
-                    .Filter("exercise_id", Supabase.Postgrest.Constants.Operator.Equals, e.ExerciseId)
-                    .Get();
+                    .From<AnswerClass>()
+                    .Filter("exercise_id", Supabase.Postgrest.Constants.Operator.Equals, e.ExerciseId).Select("*").Get();
 
                 var answers = answersResponse.Models.Select(a => new AnswerDTO
                 {
                     Id = a.Id,
                     ExerciseId = a.ExerciseId,
-                    AnswerText = a.AnswerText,
-                    IsCorrect = a.AnswerText.Trim().ToLower() == e.RightAnswer?.Trim().ToLower()
+                    Answer = a.Answer,
                 }).ToList();
                 exercises.Add(new ExerciseDTO
                 {

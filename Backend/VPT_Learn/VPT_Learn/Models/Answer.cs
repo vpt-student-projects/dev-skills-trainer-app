@@ -4,7 +4,7 @@ using Supabase.Postgrest.Models;
 namespace VPT_Learn.Models
 {
     [Table("answers")]
-    public class Answer : BaseModel
+    public class AnswerClass : BaseModel
     {
         [PrimaryKey("id")]
         public long Id { get; set; }
@@ -13,6 +13,10 @@ namespace VPT_Learn.Models
         public int ExerciseId { get; set; }
 
         [Column("answer")]
-        public string AnswerText { get; set; }
+        public string? Answer { get; set; }  // <-- совпадает с названием колонки
+
+        // если используете BaseModel, иногда нужно явно отключить поля времени:
+        // [Column("created_at")] public DateTime? CreatedAt { get; set; }
+        // [Column("updated_at")] public DateTime? UpdatedAt { get; set; }
     }
 }

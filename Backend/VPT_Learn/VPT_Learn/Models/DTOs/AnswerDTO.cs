@@ -9,7 +9,6 @@ namespace VPT_Learn.Models
 
         public int ExerciseId { get; set; }
 
-        public string AnswerText { get; set; }
-        public bool IsCorrect { get; internal set; }
+        public string Answer { get; set; }
     }
 }

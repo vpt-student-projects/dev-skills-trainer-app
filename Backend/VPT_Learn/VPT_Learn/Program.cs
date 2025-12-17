@@ -4,6 +4,8 @@ using DotNetEnv;
 using static Supabase.Postgrest.Constants;
 using Microsoft.OpenApi.Models;
 using VPT_Learn.Controllers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 namespace VPT_Learn
 {
     public class Program
@@ -17,6 +19,26 @@ namespace VPT_Learn
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
+
+
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = false,
+
+                        SignatureValidator = (token, _) =>
+                            new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(token)
+                    };
+                });
+
+            builder.Services.AddAuthorization();
+
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
