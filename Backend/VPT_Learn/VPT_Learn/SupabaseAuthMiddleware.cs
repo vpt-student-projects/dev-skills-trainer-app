@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using Supabase.Gotrue;
-
-public class SupabaseAuthMiddleware
+﻿public class SupabaseAuthMiddleware
 {
     private readonly RequestDelegate _next;
 
@@ -11,36 +7,18 @@ public class SupabaseAuthMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context, [FromServices] Supabase.Client supabase)
+    public async Task InvokeAsync(HttpContext context)
     {
         var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+        var refreshHeader = context.Request.Headers["X-Refresh-Token"].FirstOrDefault();
 
-        if (!string.IsNullOrEmpty(authHeader))
+        if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
         {
-            string token = "";
-            if (authHeader.StartsWith("Bearer "))
-            {
-                token = authHeader.Substring("Bearer ".Length).Trim();
-            }
-            else
-            {
-                token = authHeader.Trim();
-            }
-
-            try
-            {
-                context.Items["SupabaseAccessToken"] = token;
-            }
-            catch (Exception ex)
-            {
-                // Логирование ошибки авторизации
-                Console.WriteLine($"Auth error: {ex.Message}");
-            }
+            var accessToken = authHeader.Substring("Bearer ".Length).Trim();
+            context.Items["SupabaseAccessToken"] = accessToken;
+            context.Items["SupabaseRefreshToken"] = refreshHeader; // сохраняем refresh token
         }
-
 
         await _next(context);
     }
 }
-
-

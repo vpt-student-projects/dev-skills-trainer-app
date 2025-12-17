@@ -7,6 +7,7 @@ using VPT_Learn.Models;
 
 namespace VPT_Learn.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/user")]
 
@@ -76,7 +77,7 @@ namespace VPT_Learn.Controllers
 
             // 2. Используем service_role
             if (!await IsAdmin(userClient))
-                return Forbid("Admin privileges required");
+                return StatusCode(403, "Admin privileges required");
             var adminClient = userClient.AdminAuth(Environment.GetEnvironmentVariable("SUPABASE_SERVICE_ROLE_KEY")!);
             var attrs = new UserAttributes();
 

@@ -8,6 +8,7 @@ using VPT_Learn.Models;
 namespace VPT_Learn.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/lessons")]
 
     public class LessonsController : ControllerBase

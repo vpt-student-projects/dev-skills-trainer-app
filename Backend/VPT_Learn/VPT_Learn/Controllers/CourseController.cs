@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VPT_Learn.Models;
 
 namespace VPT_Learn.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/courses")]
     public class CourseController : ControllerBase
@@ -13,6 +15,8 @@ namespace VPT_Learn.Controllers
         {
             _clientFactory = clientFactory;
         }
+
+
         [HttpGet("allcourses")]
         [Tags("Courses Management")]
 

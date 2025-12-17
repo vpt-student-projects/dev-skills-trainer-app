@@ -11,36 +11,36 @@ namespace VPT_Learn.Controllers
 
     public class SupabaseUserClientFactory : ISupabaseUserClientFactory
     {
-        private readonly IConfiguration _config;
 
-        public SupabaseUserClientFactory(IConfiguration config)
-        {
-            _config = config;
-        }
+
+        private readonly string _supabaseUrl = Environment.GetEnvironmentVariable("SUPABASE_URL");
+        private readonly string _anonKey = Environment.GetEnvironmentVariable("SUPABASE_KEY");
+
         public async Task<Client> CreateAsync(HttpContext httpContext)
         {
             var token = httpContext.Items["SupabaseAccessToken"] as string;
+            var refresh = httpContext.Items["SupabaseRefreshToken"] as string;
 
-            if (string.IsNullOrWhiteSpace(token))
-                throw new UnauthorizedAccessException("Bearer token missing");
+            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(refresh))
+                throw new UnauthorizedAccessException("Bearer or refresh token missing");
 
             var options = new SupabaseOptions
             {
-                AutoConnectRealtime = false,
+                AutoRefreshToken = true,      // автоматически обновляет токен при истечении
+                AutoConnectRealtime = true,
                 Headers = new Dictionary<string, string>
-                {
-                    { "Authorization", $"Bearer {token}" }
-                }
+            {
+                { "Authorization", $"Bearer {token}" }  // JWT пользователя
+            }
             };
 
-            var client = new Client(
-                Environment.GetEnvironmentVariable("SUPABASE_URL"),
-                Environment.GetEnvironmentVariable("SUPABASE_KEY"),
-                options
-            );
-
+            var client = new Client(_supabaseUrl, _anonKey, options);
             await client.InitializeAsync();
+            // Устанавливаем текущую сессию пользователя по JWT
+            await client.Auth.SetSession(token, refresh);
             return client;
         }
+
+
     }
 }

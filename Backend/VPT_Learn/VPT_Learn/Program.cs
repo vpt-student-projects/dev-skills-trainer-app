@@ -4,8 +4,9 @@ using DotNetEnv;
 using static Supabase.Postgrest.Constants;
 using Microsoft.OpenApi.Models;
 using VPT_Learn.Controllers;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 namespace VPT_Learn
 {
     public class Program
@@ -27,15 +28,24 @@ namespace VPT_Learn
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = false,
+                        ValidateIssuer = true,
+                        ValidIssuer = "https://urenfyjdtjfffstsaymu.supabase.co/auth/v1",
 
-                        SignatureValidator = (token, _) =>
-                            new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(token)
+                        ValidateAudience = true,
+                        ValidAudience = "authenticated",
+
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+
+                        // HS256 secret напрямую
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            System.Text.Encoding.UTF8.GetBytes(
+                                Environment.GetEnvironmentVariable("SUPABASE_JWT_SECRET")
+                            )
+                        )
                     };
                 });
+
 
             builder.Services.AddAuthorization();
 
@@ -45,19 +55,26 @@ namespace VPT_Learn
                 {
                     Title = "My Supabase API",
                     Version = "v1",
-                    Description = "API � �������������� ��������������� Supabase"
+                    Description = "API с авторизацией через Supabase"
                 });
 
-                // ��������� ������������ JWT � Swagger
+                // Настройка JWT через Bearer scheme
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme",
                     Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Description = "Введите JWT токен с префиксом 'Bearer '"
                 });
-
+                c.AddSecurityDefinition("RefreshToken", new OpenApiSecurityScheme
+                {
+                    Name = "X-Refresh-Token",
+                    Type = SecuritySchemeType.ApiKey,
+                    In = ParameterLocation.Header,
+                    Description = "Введите refresh token"
+                });
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
@@ -66,18 +83,26 @@ namespace VPT_Learn
                             Reference = new OpenApiReference
                             {
                                 Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer",
-                                
-                                
+                                Id = "Bearer"
                             }
                         },
-                        new string[] { "Bearer " }
+                        new List<string>() // пустой список scopes
+                    },
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "RefreshToken"
+                            }
+                        },
+                        new List<string>()
                     }
                 });
 
-                // �������� XML �����������
-//c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "VPT_Learn.xml"));
             });
+
             builder.Configuration.AddEnvironmentVariables();
             var url = Environment.GetEnvironmentVariable("SUPABASE_URL");
             var key = Environment.GetEnvironmentVariable("SUPABASE_KEY");
@@ -92,7 +117,7 @@ namespace VPT_Learn
             builder.Services.AddScoped<ISupabaseUserClientFactory, SupabaseUserClientFactory>();
 
             var app = builder.Build();
-            app.UseMiddleware<SupabaseAuthMiddleware>();
+            //app.UseMiddleware<SupabaseAuthMiddleware>();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -111,7 +136,11 @@ namespace VPT_Learn
             });
             //app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseMiddleware<SupabaseAuthMiddleware>();
+            app.UseAuthentication();
             app.UseAuthorization();
+
+
 
 
             app.MapControllers();
