@@ -8,13 +8,14 @@ class ApiClient {
 
   /// GET
   Future<Map<String, dynamic>> get(String path) async {
-    final token = await AccessTokenStorage.get();
-
+    final token = await AccessTokenStorage.getAccessToken();
+    final refreshtoken = await AccessTokenStorage.getRefreshToken();
     final response = await http.get(
       Uri.parse('$baseUrl$path'),
       headers: {
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
+        if(refreshtoken != null) 'X-Refresh-Token': refreshtoken,
       },
     );
 
@@ -27,13 +28,16 @@ class ApiClient {
 
   /// POST
   Future<Map<String, dynamic>> post(String path, Map<String, dynamic>? body) async {
-    final token = await AccessTokenStorage.get();
+    final token = await AccessTokenStorage.getAccessToken();
+    final refreshtoken = await AccessTokenStorage.getRefreshToken();
 
     final response = await http.post(
       Uri.parse('$baseUrl$path'),
       headers: {
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
+        if(refreshtoken != null) 'X-Refresh-Token': refreshtoken,
+
       },
       body: body != null ? jsonEncode(body) : null,
     );
@@ -47,13 +51,15 @@ class ApiClient {
 
   /// PUT
   Future<Map<String, dynamic>> put(String path, Map<String, dynamic>? body) async {
-    final token = await AccessTokenStorage.get();
-
+    final token = await AccessTokenStorage.getAccessToken();
+    final refreshtoken = await AccessTokenStorage.getRefreshToken();
     final response = await http.put(
       Uri.parse('$baseUrl$path'),
       headers: {
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
+        if(refreshtoken != null) 'X-Refresh-Token': refreshtoken,
+
       },
       body: body != null ? jsonEncode(body) : null,
     );
@@ -67,13 +73,15 @@ class ApiClient {
 
   /// DELETE
   Future<Map<String, dynamic>> delete(String path) async {
-    final token = await AccessTokenStorage.get();
-
+    final token = await AccessTokenStorage.getAccessToken();
+    final refreshtoken = await AccessTokenStorage.getRefreshToken();
     final response = await http.delete(
       Uri.parse('$baseUrl$path'),
       headers: {
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
+        if(refreshtoken != null) 'X-Refresh-Token': refreshtoken,
+
       },
     );
 

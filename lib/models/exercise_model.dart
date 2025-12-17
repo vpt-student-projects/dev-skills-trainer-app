@@ -16,7 +16,7 @@ class ExerciseModel {
   factory ExerciseModel.fromJson(Map<String, dynamic> json) {
     final List<dynamic> answersJson = json['answers'] ?? [];
     final List<String> options = answersJson
-        .map((a) => a['answerText'].toString())
+        .map((a) => a['answer'].toString())
         .toList();
 
     // // Гарантируем, что правильный ответ присутствует

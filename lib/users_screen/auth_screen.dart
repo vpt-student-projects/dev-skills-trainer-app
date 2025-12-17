@@ -72,10 +72,15 @@ Future<void> login() async {
 
   try {
     final result = await AuthService().login(email, password);
-    await AccessTokenStorage.save(result?['accessToken']);
+      
+await AccessTokenStorage.saveTokens(
+      accessToken: result?['accessToken'],
+      refreshToken: result?['refreshToken'],
+    );
+
     print('Access Token saved: ${result?['accessToken']}');
-    // result содержит: userId, email, accessToken, refreshToken
-    if (email.toLowerCase().contains('admin')) {
+    // result содержит: userId, email, accessToken, refreshToken, role
+    if (result["role"] == "админ") {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) =>  AdminScreen()),
@@ -272,6 +277,7 @@ Future<void> login() async {
             ),
           ),
         ),
+         
       ],
     );
   }

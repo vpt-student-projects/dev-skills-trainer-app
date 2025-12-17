@@ -11,7 +11,10 @@ class AuthService {
 
     // Сохраняем access token
     if (data['accessToken'] != null) {
-      await AccessTokenStorage.save(data['accessToken']);
+    await AccessTokenStorage.saveTokens(
+      accessToken: data['accessToken'],
+      refreshToken: data['refreshToken'],
+    );
     }
 
     return data;
@@ -23,13 +26,15 @@ class AuthService {
 
     // Сохраняем access token
     if (data['accessToken'] != null) {
-      await AccessTokenStorage.save(data['accessToken']);
+      await AccessTokenStorage.saveTokens(
+        accessToken: data['accessToken'],
+        refreshToken: data['refreshToken'],
+      );
     }
 
     return data;
   }
 
-  /// Выход
   Future<void> signOut() async {
     await _api.post('/auth/signout', null);
 

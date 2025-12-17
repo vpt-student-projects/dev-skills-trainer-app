@@ -15,7 +15,6 @@ class ExercisesScreen extends StatefulWidget {
 
 class _ExercisesScreenState extends State<ExercisesScreen> {
    List<ExerciseModel> _exercises = [];
-  LessonService ls = LessonService();
   int _currentIndex = 0;
   String? _selectedAnswer;
   bool _isLoading = true;
@@ -32,7 +31,7 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
 
   Future<void> _loadExercises() async {
     try {
-       var exercises = await ls.fetchExercises(widget.lessonId);
+       var exercises = await LessonService().fetchExercises(widget.lessonId);
       setState(() {
         _exercises = exercises;
         _isLoading = false;
