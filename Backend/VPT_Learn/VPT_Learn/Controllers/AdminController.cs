@@ -50,73 +50,71 @@ namespace VPT_Learn.Controllers
                 users = userList
             });
         }
-        [HttpPost("admin/update-user-auth")]
-        public async Task<IActionResult> AdminUpdateUserAuth(
-        [FromBody] AdminUpdateUserRequest request)
+
+    [HttpPost("update-user-auth")]
+    public async Task<IActionResult> AdminUpdateUserAuth(
+    [FromBody] AdminUpdateUserRequest request)
         {
             var userClient = await _clientFactory.CreateAsync(HttpContext);
             if (userClient == null) return Unauthorized();
 
-
+            if (!await IsAdmin(userClient))
+                return StatusCode(403, "Admin privileges required");
 
             if (string.IsNullOrWhiteSpace(request.NewEmail) &&
                 string.IsNullOrWhiteSpace(request.NewPassword))
-            {
                 return BadRequest("Nothing to update");
-            }
 
-            // 2. Используем service_role
-            if (!await IsAdmin(userClient))
-                return StatusCode(403, "Admin privileges required");
-            var adminClient = userClient.AdminAuth(Environment.GetEnvironmentVariable("SUPABASE_SERVICE_ROLE_KEY")!);
-            var attrs = new UserAttributes();
+            // ===== 1. Обновляем AUTH (email / password) =====
+            var adminAuthClient =
+                userClient.AdminAuth(
+                    Environment.GetEnvironmentVariable("SUPABASE_SERVICE_ROLE_KEY")!
+                );
+
+            var authAttrs = new Supabase.Gotrue.AdminUserAttributes();
 
             if (!string.IsNullOrWhiteSpace(request.NewEmail))
-                attrs.Email = request.NewEmail;
+                authAttrs.Email = request.NewEmail;
 
             if (!string.IsNullOrWhiteSpace(request.NewPassword))
             {
                 if (request.NewPassword.Length < 6)
                     return BadRequest("Password too short");
 
-                attrs.Password = request.NewPassword;
+                authAttrs.Password = request.NewPassword;
             }
-            request.UserUuid.ToString();
-            var result = adminClient.UpdateUserById(request.UserUuid.ToString(),
-            new Supabase.Gotrue.AdminUserAttributes()
-            {
-                Email = request.NewEmail,
-                Password = request.NewPassword
-            });
-            var publicUpdate = new Dictionary<string, object>();
 
+            var authResult = await adminAuthClient.UpdateUserById(
+                request.UserUuid.ToString(),
+                authAttrs
+            );
+
+            if (authResult == null)
+                return StatusCode(500, "Failed to update auth user");
+
+            // ===== 2. Обновляем public.users (ТОЛЬКО email) =====
             if (!string.IsNullOrWhiteSpace(request.NewEmail))
-                publicUpdate["email"] = request.NewEmail;
-
-            if (!string.IsNullOrWhiteSpace(request.NewPassword))
-                publicUpdate["password_hash"] = request.NewPassword;
-            var adminClientPublic = SupabaseAdmin.Create();
-            var users = await adminClientPublic.From<Models.User>().Where(x => x.Email == publicUpdate["email"]).Set(x => x.Email, request.NewEmail).Update();
-            if (users == null)
-                return StatusCode(500, "Failed to fetch users");
-
-            // 5. Формируем ответ с email и UUID
-            var userList = users.Models.Select(u => new UserDTO()
             {
-                UserUuid = u.UserUuid,
-                Email = u.Email
-            }).ToList();        
+                var adminDbClient = SupabaseAdmin.Create();
+
+                var updateResult = await adminDbClient
+                    .From<Models.User>()
+                    .Filter("user_uuid", Supabase.Postgrest.Constants.Operator.Equals, request.UserUuid.ToString())
+                    .Set(u => u.Email, request.NewEmail)
+                    .Update();
 
 
-            if (result == null)
-                return StatusCode(500, "Failed to update user");
+                if (updateResult == null)
+                    return StatusCode(500, "Failed to update public user");
+            }
 
             return Ok(new
             {
-                message = "User credentials updated",
+                message = "User updated successfully",
                 userId = request.UserUuid
             });
         }
+
         // Метод проверки роли админа
         private async Task<bool> IsAdmin(Supabase.Client client)
         {
