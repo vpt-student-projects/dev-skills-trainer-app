@@ -1,10 +1,15 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:vpt_learn/models/user_model.dart';
+import 'package:vpt_learn/services/admin_users_service.dart';
 
 class UserAdministrationScreen extends StatefulWidget {
   final String email;
-  const UserAdministrationScreen({super.key, required this.email});
+  final String userUuid;
+  final String? role;
+  const UserAdministrationScreen({super.key, required this.email, required this.userUuid, this.role});
+
 
   @override
   _UserAdministrationScreenState createState() =>
@@ -16,7 +21,7 @@ class _UserAdministrationScreenState extends State<UserAdministrationScreen> {
   final passwordHashController = TextEditingController();
   final roleController = TextEditingController();
   final userUuidController = TextEditingController();
-
+  
   bool _loading = false;
   bool _saving = false;
 
@@ -30,34 +35,47 @@ class _UserAdministrationScreenState extends State<UserAdministrationScreen> {
     setState(() {
       _loading = true;
     });
-
     emailController.text = widget.email;
     passwordHashController.text = '';
-    roleController.text = 'user';
-    userUuidController.text = '00000000-0000-0000-0000-000000000000';
+    roleController.text = widget.role ?? 'студент';
+    userUuidController.text = widget.userUuid;
+
 
     setState(() {
       _loading = false;
     });
   }
 
-  Future<void> _saveMockData() async {
-    setState(() {
-      _saving = true;
-    });
+Future<void> _save() async {
+  if (_saving) return;
 
-    await Future.delayed(const Duration(milliseconds: 500));
+  setState(() => _saving = true);
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Данные (условно) сохранены')),
-      );
-    }
+  try {
+    await AdminUsersService().updateUser(
+      AdminUpdateUserRequest(
+        userUuid: widget.userUuid,
+        newEmail: emailController.text.trim(),
+        newPassword: passwordHashController.text.isEmpty
+            ? ""
+            : passwordHashController.text.trim(),
+      ),
+    );
 
-    setState(() {
-      _saving = false;
-    });
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Пользователь обновлён')),
+    );
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Ошибка: $e')),
+    );
+  } finally {
+    if (mounted) setState(() => _saving = false);
   }
+}
+
 
   @override
   void dispose() {
@@ -83,28 +101,27 @@ class _UserAdministrationScreenState extends State<UserAdministrationScreen> {
                   children: [
                     TextFormField(
                       controller: emailController,
-                      decoration: const InputDecoration(labelText: 'Email'),
-                      readOnly: true,
+                      decoration: const InputDecoration(labelText: 'Новый email'),
                     ),
                     TextFormField(
                       controller: passwordHashController,
                       decoration: const InputDecoration(
-                        labelText: 'Password Hash',
+                        labelText: 'Новый пароль',
                       ),
                     ),
                     TextFormField(
                       controller: roleController,
-                      decoration: const InputDecoration(labelText: 'Role'),
+                      decoration: const InputDecoration(labelText: 'Роль'),
                     ),
                     TextFormField(
                       controller: userUuidController,
-                      decoration:
-                          const InputDecoration(labelText: 'User UUID'),
+                      decoration: const InputDecoration(labelText: 'User UUID'),
                     ),
                     const SizedBox(height: 20),
+
                     ElevatedButton(
-                      onPressed: _saving ? null : _saveMockData,
-                      child: Text(_saving ? 'Сохраняем...' : 'Сохранить'),
+                      onPressed: _saving ? null : _save,
+                      child: Text(_saving ? 'Изменяем...' : 'Изменить'),
                     ),
                   ],
                 ),
