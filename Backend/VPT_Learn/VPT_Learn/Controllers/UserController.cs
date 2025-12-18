@@ -60,55 +60,8 @@ namespace VPT_Learn.Controllers
         }
 
 
-        [HttpPost("admin/update-user-auth")]
-        public async Task<IActionResult> AdminUpdateUserAuth(
-         [FromBody] AdminUpdateUserRequest request)
-        {
-            var userClient = await _clientFactory.CreateAsync(HttpContext);
-            if (userClient == null) return Unauthorized();
-
-
-
-            if (string.IsNullOrWhiteSpace(request.NewEmail) &&
-                string.IsNullOrWhiteSpace(request.NewPassword))
-            {
-                return BadRequest("Nothing to update");
-            }
-
-            // 2. Используем service_role
-            if (!await IsAdmin(userClient))
-                return StatusCode(403, "Admin privileges required");
-            var adminClient = userClient.AdminAuth(Environment.GetEnvironmentVariable("SUPABASE_SERVICE_ROLE_KEY")!);
-            var attrs = new UserAttributes();
-
-            if (!string.IsNullOrWhiteSpace(request.NewEmail))
-                attrs.Email = request.NewEmail;
-
-            if (!string.IsNullOrWhiteSpace(request.NewPassword))
-            {
-                if (request.NewPassword.Length < 6)
-                    return BadRequest("Password too short");
-
-                attrs.Password = request.NewPassword;
-            }
-            request.UserUuid.ToString();
-            var result = adminClient.UpdateUserById(request.UserUuid.ToString(),
-            new Supabase.Gotrue.AdminUserAttributes() 
-            {
-                Email = request.NewEmail,
-                Password = request.NewPassword
-            });
-
-            if (result == null)
-                return StatusCode(500, "Failed to update user");
-
-            return Ok(new
-            {
-                message = "User credentials updated",
-                userId = request.UserUuid
-            });
-        }
-
+       
+        
 
 
         private async Task<bool> IsAdmin(Supabase.Client client)
