@@ -41,11 +41,6 @@ class KnowledgeBasePage extends StatelessWidget {
             color: AppColors.secondary.withValues(alpha: 0.8),
             margin: const EdgeInsets.symmetric(vertical: 8),
             child: ListTile(
-              leading: Image.network(
-                language['logo']!,
-                width: 40,
-                height: 40,
-              ),
               title: Text(
                 language['name']!,
                 style: const TextStyle(fontSize: 20, color: AppColors.primaryText),
