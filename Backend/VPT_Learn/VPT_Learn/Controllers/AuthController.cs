@@ -23,13 +23,30 @@ namespace VPT_Learn.Controllers
                 if (result.User == null)
                     return BadRequest("Не удалось зарегистрировать пользователя");
 
-                var accessToken = result.AccessToken;
+                var userClient = new Supabase.Client(
+                    Environment.GetEnvironmentVariable("SUPABASE_URL")!,
+                    Environment.GetEnvironmentVariable("SUPABASE_KEY"),
+                     new SupabaseOptions
+                     {
+                         AutoConnectRealtime = false,
+                         Headers = new Dictionary<string, string>
+                          {
+                            { "Authorization", $"Bearer { result.AccessToken}" }
+                          }
+                     }
+                );
+                var userData = await userClient
+                .From<Models.User>()
+                .Filter("user_uuid", Supabase.Postgrest.Constants.Operator.Equals, result.User.Id)
+                .Single();
 
                 return Ok(new
                 {
                     userId = result.User.Id,
                     email = result.User.Email,
-                    accessToken
+                    accessToken = result.AccessToken,
+                    refreshToken = result.RefreshToken,
+                    role = userData.Role
                 });
             }
             catch (Exception ex)
