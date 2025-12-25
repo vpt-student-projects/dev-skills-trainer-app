@@ -3,9 +3,6 @@ import 'users_screen/auth_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -17,8 +14,6 @@ void main() async {
     // Если файл .env не найден, используем значения по умолчанию
     print('Warning: .env file not found. Using default values.');
   }
-
-
 
   runApp(const MyApp());
 }

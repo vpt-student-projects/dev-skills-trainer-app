@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import 'admin_courses_screen.dart';
 import 'admin_users_screen.dart';
+import 'package:vpt_learn/users_screen/profile_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -16,6 +17,7 @@ class _AdminScreenState extends State<AdminScreen> {
   final List<Widget> _pages = const [
     AdminUsersScreen(),
     AdminCoursesScreen(),
+    ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -42,6 +44,10 @@ class _AdminScreenState extends State<AdminScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.menu_book),
             label: 'Курсы',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Профиль',
           ),
         ],
       ),
