@@ -11,8 +11,6 @@ namespace VPT_Learn.Controllers
 
     public class SupabaseUserClientFactory : ISupabaseUserClientFactory
     {
-
-
         private readonly string _supabaseUrl = Environment.GetEnvironmentVariable("SUPABASE_URL");
         private readonly string _anonKey = Environment.GetEnvironmentVariable("SUPABASE_KEY");
 
@@ -40,7 +38,5 @@ namespace VPT_Learn.Controllers
             await client.Auth.SetSession(token, refresh);
             return client;
         }
-
-
     }
 }

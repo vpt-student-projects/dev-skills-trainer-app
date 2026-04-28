@@ -42,7 +42,8 @@ namespace VPT_Learn.Controllers
             var userList = users.Models.Select(u => new UserDTO()
             {
                 UserUuid = u.UserUuid,      
-                Email = u.Email
+                Email = u.Email,
+                Role = u.Role
             }).ToList();
 
             return Ok(new
@@ -92,16 +93,14 @@ namespace VPT_Learn.Controllers
             if (authResult == null)
                 return StatusCode(500, "Failed to update auth user");
 
-            // ===== 2. Обновляем public.users (ТОЛЬКО email) =====
+            // ===== 2. Обновляем public.users  =====
             if (!string.IsNullOrWhiteSpace(request.NewEmail))
             {
                 var adminDbClient = SupabaseAdmin.Create();
-
-                var updateResult = await adminDbClient
-                    .From<Models.User>()
-                    .Filter("user_uuid", Supabase.Postgrest.Constants.Operator.Equals, request.UserUuid.ToString())
-                    .Set(u => u.Email, request.NewEmail)
-                    .Update();
+                var query = adminDbClient.From<Models.User>().Filter("user_uuid", Supabase.Postgrest.Constants.Operator.Equals, request.UserUuid.ToString());
+                if (!string.IsNullOrWhiteSpace(request.NewEmail)) query = query.Set(u => u.Email, request.NewEmail);
+                if (!string.IsNullOrWhiteSpace(request.Role)) query = query.Set(u => u.Role, request.Role);
+                var updateResult = await query.Update();
 
 
                 if (updateResult == null)

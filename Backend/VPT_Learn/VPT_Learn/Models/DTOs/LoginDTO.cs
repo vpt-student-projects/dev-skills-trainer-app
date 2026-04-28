@@ -2,7 +2,6 @@
 
 namespace VPT_Learn.Models
 {
-
         public class LoginDTO 
         {
             public string Email { get; set; }
