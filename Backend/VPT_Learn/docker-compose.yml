@@ -1,28 +1,28 @@
 services:
-  rabbitmq-node1:
-    image: rabbitmq:3-management
-    environment:
-      RABBITMQ_ERLANG_COOKIE: "mycookie"
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data1:/var/lib/rabbitmq/mnesia
-    networks:
-      - app-network
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-      # reservations:
-      #   memory: 2G
-    healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+  # rabbitmq-node1: №старая реализация требовала rabbitmq
+  #   image: rabbitmq:3-management
+  #   environment:
+  #     RABBITMQ_ERLANG_COOKIE: "mycookie"
+  #     RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+  #     RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   volumes:
+  #     - rabbitmq_data1:/var/lib/rabbitmq/mnesia
+  #   networks:
+  #     - app-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 4G
+  #     # reservations:
+  #     #   memory: 2G
+  #   healthcheck:
+  #     test: ["CMD", "rabbitmqctl", "status"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
 
   api:
     build:
@@ -40,9 +40,9 @@ services:
       - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
     ports:
       - "8080:8080"
-    depends_on:
-      rabbitmq-node1:
-        condition: service_healthy
+    # depends_on:
+    #   rabbitmq-node1:
+    #     condition: service_healthy
     networks:
       - app-network
 
