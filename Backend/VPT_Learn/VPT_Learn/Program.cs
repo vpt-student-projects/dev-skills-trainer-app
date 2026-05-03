@@ -7,6 +7,8 @@ using VPT_Learn.Controllers;
 
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using worker;
+using VPT_Learn.Services;
 namespace VPT_Learn
 {
     public class Program
@@ -16,7 +18,15 @@ namespace VPT_Learn
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            Env.Load();
+            if (File.Exists(".env"))
+            {
+                Env.Load();
+                Console.WriteLine(".env file loaded successfully");
+            }
+            else
+            {
+                Console.WriteLine(".env file not found, using system environment variables");
+            }
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -106,15 +116,33 @@ namespace VPT_Learn
             builder.Configuration.AddEnvironmentVariables();
             var url = Environment.GetEnvironmentVariable("SUPABASE_URL");
             var key = Environment.GetEnvironmentVariable("SUPABASE_KEY");
-
+// ✅ Правильная регистрация с передачей API ключа в Gotrue
             builder.Services.AddSingleton<Supabase.Client>(_ =>
-                new Supabase.Client(url,key,
+            {
+                var client = new Supabase.Client(url, key,
                     new SupabaseOptions
                     {
                         AutoRefreshToken = true,
                         AutoConnectRealtime = true
-                    }));
+                    });
+                
+                // Важно: инициализируем клиент, чтобы Gotrue получил API ключ
+                client.InitializeAsync().GetAwaiter().GetResult();                
+                return client;
+            });
+
+            Console.WriteLine($"=== Environment Variables Debug ===");
+            Console.WriteLine($"SUPABASE_URL: {url}");
+            Console.WriteLine($"SUPABASE_KEY exists: {(string.IsNullOrEmpty(key) ? "NO" : "YES")}");
+            Console.WriteLine($"SUPABASE_KEY length: {key?.Length ?? 0}");
+            Console.WriteLine($"Current Directory: {Directory.GetCurrentDirectory()}");
+            Console.WriteLine($".env exists: {File.Exists(".env")}");
+
+
             builder.Services.AddScoped<ISupabaseUserClientFactory, SupabaseUserClientFactory>();
+            builder.Services.AddSingleton<SandboxManager>();
+            builder.Services.AddSingleton<CodeExecutionBackgroundService>();
+            builder.Services.AddHostedService(sp => sp.GetRequiredService<CodeExecutionBackgroundService>());
 
             var app = builder.Build();
             //app.UseMiddleware<SupabaseAuthMiddleware>();

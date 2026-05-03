@@ -4,6 +4,7 @@ using VPT_Learn.Models;
 using Supabase;
 using Supabase.Gotrue;
 using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace VPT_Learn.Controllers
 {
@@ -58,6 +59,7 @@ namespace VPT_Learn.Controllers
 
 
         [HttpPost("login")]
+        [AllowAnonymous] 
         public async Task<IActionResult> Login([FromBody] LoginDTO dto, [FromServices] Supabase.Client supabase)
         {
             try
@@ -106,7 +108,7 @@ namespace VPT_Learn.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { error = ex.Message + ex.Source});
             }
         }
 

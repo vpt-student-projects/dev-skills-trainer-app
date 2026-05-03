@@ -1,0 +1,155 @@
+services:
+  rabbitmq-node1:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "mycookie"
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data1:/var/lib/rabbitmq/mnesia
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+      # reservations:
+      #   memory: 2G
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./VPT_Learn
+      dockerfile: Dockerfile
+    image: vpt_learn_api
+    environment:
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_HOST=vpt_learndocker-rabbitmq-node1-1
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+    ports:
+      - "8080:8080"
+    depends_on:
+      rabbitmq-node1:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  # 3. Supabase Function (обработчик запросов)
+  # supabase:
+  # build: ./supabase/functions/queue
+  # depends_on:
+  #   - rabbitmq-node1
+  # environment:
+  #   - RABBITMQ_USER=${RABBITMQ_USER}
+  #   - RABBITMQ_PASS=${RABBITMQ_PASS}
+  #   - RABBITMQ_HOST=vpt_learndocker-rabbitmq-node1-1
+  #   - SUPABASE_URL=${SUPABASE_URL}
+  #   - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+  # networks:
+  #   - app-network
+  # volumes:
+  #   - /var/run/docker.sock:/var/run/docker.sock
+
+  # 3. Worker-ноды (C#) - масштабирование (deprecated, использовалось на стадии разработки)
+  # worker:
+  #   build: ./worker
+  #   depends_on:
+  #     rabbitmq-node1:
+  #       condition: service_healthy
+  #   # - rabbitmq-node3
+  #   # - supabase
+  #   environment:
+  #     - RABBITMQ_USER=${RABBITMQ_USER}
+  #     - RABBITMQ_PASS=${RABBITMQ_PASS}
+  #     - RABBITMQ_HOST=vpt_learndocker-rabbitmq-node1-1
+  #     - SUPABASE_URL=${SUPABASE_URL}
+  #     - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+  #     - ASPNETCORE_ENVIRONMENT=Production
+  #   networks:
+  #     - app-network
+  #   volumes:
+  #     - task-volume:/code
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   # deploy:
+  #   #   replicas: 2
+  #   #   resources:
+  #   #     limits:
+  #   #       memory: 1G
+  #   #     cpus: '1.0'
+  #   # reservations:
+  #   #   memory: 512M
+  #   #   cpus: '0.5'
+  #   command: ["dotnet", "worker.dll"]
+  #   # , "--parallel", "5"] # Обработка 5 задач параллельно
+
+  # 4. Универсальный Sandbox (Alpine Linux)
+  c-sandbox:
+    build: sandbox/c-sandbox
+    command: ["sleep", "10"]
+    # Режим ожидания
+
+  csharp-sandbox:
+    build: sandbox/csharp-sandbox
+    command: ["sleep", "10"]
+
+  python-sandbox:
+    build: sandbox/python-sandbox
+    command: ["sleep", "10"]
+
+  java-sandbox:
+    build: sandbox/java-sandbox
+    command: ["sleep", "10"]
+
+  # # 6. Кэш Redis для ускорения запросов
+  # redis:
+  #   image: redis:alpine
+  #   networks:
+  #     - app-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 512M
+
+  # # 7. Prometheus + Grafana для мониторинга
+  # prometheus:
+  #   image: prom/prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #   networks:
+  #     - app-network
+
+  # grafana:
+  #   image: grafana/grafana
+  #   depends_on:
+  #     - prometheus
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #     - app-network
+
+networks:
+  app-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: "br-optimized"
+
+volumes:
+  task-volume:
+  rabbitmq_data1:
+  rabbitmq_data2:
+  rabbitmq_data3:
+  postgres-data:

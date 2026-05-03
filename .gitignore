@@ -359,3 +359,5 @@ MigrationBackup/
 # End of https://www.toptal.com/developers/gitignore/api/vs
 *.env
 /Backend/ConsoleApp1/ConsoleApp1
+Backend/config.yml
+Backend/.vscode/launch.json
