@@ -15,6 +15,9 @@ namespace VPT_Learn.Services
         private readonly BlockingCollection<CodeExecutionTask> _queue =
             new BlockingCollection<CodeExecutionTask>(new ConcurrentQueue<CodeExecutionTask>());
 
+        private readonly ConcurrentDictionary<string, TaskResult> _taskResults = 
+            new ConcurrentDictionary<string, TaskResult>();
+
         private readonly SandboxManager _sandboxManager;
         private readonly ILogger<CodeExecutionBackgroundService> _logger;
 
@@ -39,6 +42,15 @@ namespace VPT_Learn.Services
                 TaskId = taskId
             });
             return taskId;
+        }
+
+        /// <summary>
+        /// Get the result of a task by its ID.
+        /// </summary>
+        public TaskResult? GetTaskResult(string taskId)
+        {
+            _taskResults.TryGetValue(taskId, out var result);
+            return result;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -115,15 +127,30 @@ namespace VPT_Learn.Services
 
         private string ReturnOutput(string taskId, string status, string output)
         {
-            //var output = new CodeExecutionTask { TaskId = taskId, Status = status, Output = output };
+            var result = new TaskResult
+            {
+                TaskId = taskId,
+                Status = status,
+                Output = output,
+                CompletedAt = DateTime.UtcNow
+            };
+            _taskResults[taskId] = result;
             return output;
         }
     }
 
     internal class CodeExecutionTask
     {
-         public string Code { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
         public string Language { get; set; } = string.Empty;
         public string TaskId { get; set; } = string.Empty;
+    }
+
+    public class TaskResult
+    {
+        public string TaskId { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string Output { get; set; } = string.Empty;
+        public DateTime CompletedAt { get; set; }
     }
 }
