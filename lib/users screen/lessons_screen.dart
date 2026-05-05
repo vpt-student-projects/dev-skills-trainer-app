@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'exercises_screen.dart';
+import 'compiler_exercise_screen.dart';
 
 class LessonsScreen extends StatefulWidget {
   final int courseId;
@@ -66,8 +67,10 @@ class _LessonsScreenState extends State<LessonsScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      ExercisesScreen(lessonId: lesson.id),
+                                  builder: (context) => CompilerExerciseScreen(
+                                    exerciseId: lesson.id,  // id урока/задания
+                                    title: lesson.title,
+                                  ),
                                 ),
                               );
                             },
