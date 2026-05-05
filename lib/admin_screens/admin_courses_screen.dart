@@ -1,4 +1,6 @@
+// lib/admin_screens/admin_courses_screen.dart
 import 'package:flutter/material.dart';
+import 'package:vpt_learn/services/admin_courses_service.dart';
 import 'admin_lessons_screen.dart';
 import '/theme.dart';
 
@@ -10,68 +12,214 @@ class AdminCoursesScreen extends StatefulWidget {
 }
 
 class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
-  final List<Map<String, dynamic>> courses = [
-    {'course_id': 1, 'title': 'Курс 1'},
-    {'course_id': 2, 'title': 'Курс 2'},
-    {'course_id': 3, 'title': 'Курс 3'},
-  ];
+  List<Map<String, dynamic>> _courses = [];
+  bool _isLoading = true;
+  final AdminCoursesService _service = AdminCoursesService();
 
-  final bool _isLoading = false; 
+  @override
+  void initState() {
+    super.initState();
+    _loadCourses();
+  }
 
-  Future<void> _refresh() async {
-    setState(() {});
+  Future<void> _loadCourses() async {
+    setState(() => _isLoading = true);
+    try {
+      _courses = await _service.fetchAllCourses();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка: $e')),
+      );
+    }
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _createCourse() async {
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Новый курс'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(labelText: 'Название'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: descController,
+              decoration: const InputDecoration(labelText: 'Описание'),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Создать'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != true) return;
+
+    try {
+      await _service.createCourse(titleController.text, descController.text);
+      await _loadCourses();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Курс создан')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка: $e')),
+      );
+    }
+  }
+
+  Future<void> _editCourse(Map<String, dynamic> course) async {
+    final titleController = TextEditingController(text: course['title']);
+    final descController = TextEditingController(text: course['description'] ?? '');
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Редактировать курс'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(labelText: 'Название'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: descController,
+              decoration: const InputDecoration(labelText: 'Описание'),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Сохранить'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != true) return;
+
+    try {
+      await _service.updateCourse(course['courseId'], titleController.text, descController.text);
+      await _loadCourses();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Курс обновлён')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка: $e')),
+      );
+    }
+  }
+
+  Future<void> _deleteCourse(Map<String, dynamic> course) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Удалить курс?'),
+        content: Text('Вы уверены, что хотите удалить "${course['title']}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Отмена'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Удалить'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await _service.deleteCourse(course['courseId']);
+      await _loadCourses();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Курс удалён')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Список курсов'),
+        title: const Text('Управление курсами'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _createCourse,
+            tooltip: 'Добавить курс',
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _refresh,
-            tooltip: 'Обновить',
+            onPressed: _loadCourses,
           ),
         ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : courses.isEmpty
-              ? Center(
-                  child: Text(
-                    'Курсы не найдены',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: AppColors.secondaryText,
-                    ),
-                  ),
-                )
+          : _courses.isEmpty
+              ? const Center(child: Text('Курсы не найдены'))
               : ListView.builder(
                   padding: const EdgeInsets.all(8),
-                  itemCount: courses.length,
+                  itemCount: _courses.length,
                   itemBuilder: (context, index) {
-                    final course = courses[index];
+                    final course = _courses[index];
                     return Card(
-                      elevation: 3,
-                      margin: const EdgeInsets.symmetric(
-                        vertical: 6,
-                        horizontal: 8,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                       child: ListTile(
-                        title: Text(
-                          course['title'] as String,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        title: Text(course['title']),
+                        subtitle: course['description'] != null
+                            ? Text(course['description'], maxLines: 1)
+                            : null,
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'edit') _editCourse(course);
+                            if (value == 'delete') _deleteCourse(course);
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
+                            const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: Colors.red))),
+                          ],
                         ),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => AdminLessonsScreen(
-                                courseId: course['course_id'] as int,
+                                courseId: course['courseId'],
                               ),
                             ),
                           );
