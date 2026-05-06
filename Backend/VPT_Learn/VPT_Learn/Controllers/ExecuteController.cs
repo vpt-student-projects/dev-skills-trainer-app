@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using VPT_Learn.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace VPT_Learn.Controllers
 {
+    [Authorize]
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/controller")]
     public class ExecuteController : ControllerBase
     {
         private readonly CodeExecutionBackgroundService _worker;
@@ -16,14 +18,14 @@ namespace VPT_Learn.Controllers
 
         public record ExecuteRequest(string Code, string Language);
 
-        [HttpPost]
+        [HttpPost("execute")]
         public ActionResult Execute([FromBody] ExecuteRequest request)
         {
             var taskId = _worker.EnqueueTask(request.Code, request.Language);
             return Ok(new { taskId });
         }
 
-        [HttpGet("{taskId}")]
+        [HttpGet("execute/{taskId}")]
         public ActionResult GetTaskResult(string taskId)
         {
             var result = _worker.GetTaskResult(taskId);

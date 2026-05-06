@@ -38,13 +38,25 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+      - DOCKER_HOST=tcp://dind:2375
     ports:
       - "8080:8080"
-    # depends_on:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - dind
     #   rabbitmq-node1:
     #     condition: service_healthy
     networks:
       - app-network
+
+
+  dind:
+    image: docker:stable-dind
+    privileged: true  # критически важно для DinD
+    environment:
+      - DOCKER_TLS_CERTDIR=""
+    command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]
 
   # 3. Supabase Function (обработчик запросов)
   # supabase:
