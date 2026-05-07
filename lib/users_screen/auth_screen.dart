@@ -5,14 +5,14 @@ import 'home_screen.dart';
 import '../theme.dart';
 import '../admin_screens/admin_screen.dart';
 
-class AuthPage extends StatefulWidget {
-  const AuthPage({super.key});
+class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
 
   @override
-  State<AuthPage> createState() => _AuthPageState();
+  State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthPageState extends State<AuthPage>
+class _AuthScreenState extends State<AuthScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -55,6 +55,10 @@ Future<void> createAccount() async {
   try {
     final result = await AuthService().register(email, password);
     // После регистрации можно сохранить accessToken, userId
+    await AccessTokenStorage.saveTokens(
+      accessToken: result['accessToken'],
+      refreshToken: result['refreshToken'],
+    );
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -73,12 +77,12 @@ Future<void> login() async {
   try {
     final result = await AuthService().login(email, password);
       
-await AccessTokenStorage.saveTokens(
-      accessToken: result?['accessToken'],
-      refreshToken: result?['refreshToken'],
-    );
+    await AccessTokenStorage.saveTokens(
+          accessToken: result['accessToken'],
+          refreshToken: result['refreshToken'],
+        );
 
-    print('Access Token saved: ${result?['accessToken']}');
+    print('Access Token saved: ${result['accessToken']}');
     // result содержит: userId, email, accessToken, refreshToken, role
     if (result["role"] == "админ") {
       Navigator.pushReplacement(

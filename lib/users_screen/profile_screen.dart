@@ -35,7 +35,7 @@ class ProfilePage extends StatelessWidget {
               onTap: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const AuthPage()),
+                  MaterialPageRoute(builder: (context) => const AuthScreen()),
                 );
               },
             ),
