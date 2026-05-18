@@ -27,45 +27,52 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _changePassword() async {
-    final current = _currentPasswordController.text.trim();
-    final newPass = _newPasswordController.text.trim();
-    final confirm = _confirmPasswordController.text.trim();
+  final current = _currentPasswordController.text.trim();
+  final newPass = _newPasswordController.text.trim();
+  final confirm = _confirmPasswordController.text.trim();
 
-    if (current.isEmpty || newPass.isEmpty || confirm.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Заполните все поля')),
-      );
-      return;
-    }
-
-    if (newPass != confirm) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Новые пароли не совпадают')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      final api = ApiClient();
-      await api.post('/user/change-password', {
-        'currentPassword': current,
-        'newPassword': newPass,
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Пароль успешно изменён')),
-      );
-      _cancelEdit();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка: $e')),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
+  if (current.isEmpty || newPass.isEmpty || confirm.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Заполните все поля')),
+    );
+    return;
   }
+
+  if (newPass != confirm) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Новые пароли не совпадают')),
+    );
+    return;
+  }
+
+  setState(() => _isLoading = true);
+
+  try {
+    final api = ApiClient();
+    Future<String> _getCurrentUserUuid() async {
+  final api = ApiClient();
+  final data = await api.get('/user/current');
+  return data['userUuid']; // или 'uuid' — посмотри в swagger какой ключ
+}
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Пароль успешно изменён')),
+    );
+    _cancelEdit();
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Ошибка: $e')),
+    );
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
+
+Future<String> _getCurrentUserUuid() async {
+  final api = ApiClient();
+  final data = await api.get('/user/current');
+  return data['userUuid']; // или 'uuid' — проверь по swagger
+}
 
   Future<void> _logout() async {
     await AccessTokenStorage.clear();
