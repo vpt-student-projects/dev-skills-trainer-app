@@ -162,7 +162,7 @@ namespace VPT_Learn
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
                 c.RoutePrefix = string.Empty; // Swagger UI �������� �� ��������� URL
             });
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             app.UseRouting();
             app.UseMiddleware<SupabaseAuthMiddleware>();
             app.UseAuthentication();
