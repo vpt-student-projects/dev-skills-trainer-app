@@ -7,15 +7,21 @@ namespace VPT_Learn.Models
     public class Language : BaseModel
     {
         [PrimaryKey("id")]
-        public long Id { get; set; }
+        public int Id { get; set; }
         
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
         
-        [Column("name")]  // <- Убедитесь, что атрибут указан
+        [Column("name")]
         public string Name { get; set; }
         
-        [Column("description")]  // <- Убедитесь, что атрибут указан
+        [Column("description")]
         public string Description { get; set; }
+        
+        [Column("features")]
+        public string Features { get; set; }
+        
+        [Column("example")]
+        public string Example { get; set; }
     }
 }

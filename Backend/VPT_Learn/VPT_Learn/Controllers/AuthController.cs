@@ -20,10 +20,8 @@ namespace VPT_Learn.Controllers
             try
             {
                 var result = await supabase.Auth.SignUp(dto.Email, dto.Password);
-
                 if (result.User == null)
                     return BadRequest("Не удалось зарегистрировать пользователя");
-
                 var userClient = new Supabase.Client(
                     Environment.GetEnvironmentVariable("SUPABASE_URL")!,
                     Environment.GetEnvironmentVariable("SUPABASE_KEY"),

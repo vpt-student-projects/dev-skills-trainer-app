@@ -5,7 +5,7 @@ using VPT_Learn.Models;
 
 namespace VPT_Learn.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/knowledgebase")]
     public class KnowledgeBaseController : ControllerBase
@@ -18,37 +18,41 @@ namespace VPT_Learn.Controllers
         }
 
 
-        [HttpGet("{language}")]
-    public async Task<IActionResult> GetInfo(string language)
+        [HttpGet]
+    public async Task<IActionResult> GetInfo()
     {
         try
         {
             var client = await _clientFactory.CreateAsync(HttpContext);
             
             // Используем .Get() вместо .Single() для лучшей обработки
-            var result = await client.From<Models.Language>()
-                .Filter(n => n.Name, Supabase.Postgrest.Constants.Operator.Equals, language)
-                .Get();
+            var result = await client.From<Models.Language>().Get();
             
             // Проверяем, есть ли данные в результате
             if (result == null || result.Models == null || !result.Models.Any())
             {
-                return NotFound(new { message = $"Данные для языка '{language}' не найдены в базе" });
+                return NotFound(new { message = $"Данные для языков не найдены в базе" });
             }
             
-            var data = result.Models.FirstOrDefault();
+              var languagedata = result.Models.Select(e => new LanguageDTO
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Description = e.Description,
+                    Features = e.Features,
+                    Example = e.Example,
+                    CreatedAt = e.CreatedAt
+                });
+                    
+                
             
             // Дополнительная проверка на null
-            if (data == null)
+            if (languagedata == null)
             {
-                return NotFound(new { message = $"Данные для языка '{language}' не найдены в базе" });
+                return NotFound(new { message = $"Данные для языка '{languagedata}' не найдены в базе" });
             }
 
-            return Ok(new
-            {
-                name = data.Name,
-                description = data.Description
-            });
+            return Ok(new { languagedata });
         }
         catch (Exception ex)
         {
