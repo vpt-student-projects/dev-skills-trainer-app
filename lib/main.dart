@@ -1,32 +1,36 @@
 import 'package:flutter/material.dart';
 import 'users_screen/auth_screen.dart';
+import 'users_screen/home_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'services/access_token_storage.dart';  // ← это новая строчка
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-
-    try {
-    // Загружаем переменные окружения из .env файла
+  try {
     await dotenv.load(fileName: '.env');
   } catch (e) {
-    // Если файл .env не найден, используем значения по умолчанию
     print('Warning: .env file not found. Using default values.');
   }
 
-  runApp(const MyApp());
+  
+  // Проверяем, входил ли пользователь раньше
+  final isLoggedIn = await AccessTokenStorage.hasAccessToken();
+  
+
+  runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData.dark(),
-      home:  AuthScreen(),
+      
+      home: isLoggedIn ? const HomeScreen() : const AuthScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
