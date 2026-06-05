@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:vpt_learn/models/lesson_model.dart';
 import 'package:vpt_learn/services/lesson_service.dart';
 import 'exercises_screen.dart';
+import 'package:vpt_learn/users_screen/compiler_exercise_screen.dart';
 
 class LessonsScreen extends StatefulWidget {
   final int courseId;
@@ -62,8 +63,10 @@ class _LessonsScreenState extends State<LessonsScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      ExercisesScreen(lessonId: lesson.lessonId),
+                                  builder: (context) => CompilerExerciseScreen(
+                                    exerciseId: lesson.lessonId,
+                                    title: lesson.title,
+                                  ),
                                 ),
                               );
                             },
