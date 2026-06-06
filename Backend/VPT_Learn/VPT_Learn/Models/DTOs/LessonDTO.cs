@@ -19,5 +19,7 @@ namespace VPT_Learn.Models
 
 
         public int OrderIndex { get; set; }
+
+        public string? Type { get; set; }
     }
 }

@@ -20,8 +20,6 @@ namespace VPT_Learn.Models
         [Column("order_index")]
         public int OrderIndex { get; set; }
 
-        [Column("type")]
-        public string Type { get; set; }
 
         // Для DTO: список всех ответов
         public List<AnswerClass> Answers { get; set; }

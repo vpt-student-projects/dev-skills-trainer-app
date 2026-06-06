@@ -28,38 +28,45 @@ namespace VPT_Learn.Controllers
             var client = await _clientFactory.CreateAsync(HttpContext);
 
             // Получаем упражнения по уроку
+            // Получаем упражнения
             var exerciseResponse = await client
                 .From<Exercise>()
                 .Filter("lesson_id", Supabase.Postgrest.Constants.Operator.Equals, lessonId)
                 .Get();
-
-            var exercises = new List<ExerciseDTO>();
-
-            foreach (var e in exerciseResponse.Models)
+            
+            if (!exerciseResponse.Models.Any())
             {
-                // Получаем все ответы для данного упражнения
-                var answersResponse = await client
-                    .From<AnswerClass>()
-                    .Filter("exercise_id", Supabase.Postgrest.Constants.Operator.Equals, e.ExerciseId).Select("*").Get();
-
-                var answers = answersResponse.Models.Select(a => new AnswerDTO
+                return Ok(new { count = 0, exercises = new List<ExerciseDTO>() });
+            }
+            
+            // Получаем все ответы одним запросом
+            var exerciseIds = exerciseResponse.Models.Select(e => e.ExerciseId).ToList();
+            var answersResponse = await client
+                .From<AnswerClass>()
+                .Filter("exercise_id", Supabase.Postgrest.Constants.Operator.In, exerciseIds)
+                .Get();
+            
+            // Группируем ответы
+            var answersByExerciseId = answersResponse.Models
+                .GroupBy(a => a.ExerciseId)
+                .ToDictionary(g => g.Key, g => g.Select(a => new AnswerDTO
                 {
                     Id = a.Id,
                     ExerciseId = a.ExerciseId,
                     Answer = a.Answer,
-                }).ToList();
-                exercises.Add(new ExerciseDTO
-                {
-                    ExerciseId = e.ExerciseId,
-                    LessonId = e.LessonId,
-                    TaskDescription = e.TaskDescription,
-                    RightAnswer = e.RightAnswer,
-                    OrderIndex = e.OrderIndex,
-                    Answers = answers
-                });
-
-            }
-
+                }).ToList());
+            
+            // Формируем результат
+            var exercises = exerciseResponse.Models.Select(e => new ExerciseDTO
+            {
+                ExerciseId = e.ExerciseId,
+                LessonId = e.LessonId,
+                TaskDescription = e.TaskDescription,
+                RightAnswer = e.RightAnswer,
+                OrderIndex = e.OrderIndex,
+                Answers = answersByExerciseId.GetValueOrDefault(e.ExerciseId, new List<AnswerDTO>())
+            }).ToList();
+            
             return Ok(new
             {
                 count = exercises.Count,
@@ -85,7 +92,8 @@ namespace VPT_Learn.Controllers
                 CourseId = e.CourseId,
                 Title = e.Title,
                 Content = e.Content,
-                OrderIndex = e.OrderIndex
+                OrderIndex = e.OrderIndex,
+                Type = e.Type
             }).ToList();
 
             return Ok(new
