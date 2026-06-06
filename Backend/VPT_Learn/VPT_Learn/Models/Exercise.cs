@@ -16,7 +16,7 @@ namespace VPT_Learn.Models
         public string TaskDescription { get; set; }
 
         [Column("right_answer")]
-        public string? RightAnswer { get; set; }
+        public int? RightAnswer { get; set; }
         [Column("order_index")]
         public int OrderIndex { get; set; }
 

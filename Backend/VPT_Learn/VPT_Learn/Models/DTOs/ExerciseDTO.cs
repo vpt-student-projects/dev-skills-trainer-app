@@ -7,7 +7,7 @@ namespace VPT_Learn.Models
         public int ExerciseId { get; set; }
         public int LessonId { get; set; }   // FK → lessons.lesson_id
         public string TaskDescription { get; set; }
-        public string? RightAnswer { get; set; }
+        public int? RightAnswer { get; set; }
         public int OrderIndex { get; internal set; }
         public List<AnswerDTO> Answers { get; set; }
     }
