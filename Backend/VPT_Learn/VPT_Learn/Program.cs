@@ -164,11 +164,9 @@ namespace VPT_Learn
             });
             app.UseHttpsRedirection();
             app.UseRouting();
-            app.UseMiddleware<SupabaseAuthMiddleware>();
-            app.UseAuthentication();
+            app.UseAuthentication(); // JWT проверка
             app.UseAuthorization();
-
-
+            app.UseMiddleware<SupabaseAuthMiddleware>();
 
 
             app.MapControllers();
