@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'courses_screen.dart';
-import 'information_base_screen.dart';
 import 'profile_screen.dart';
+import 'information_base_screen.dart';
 import '../theme.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -11,8 +11,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
   final List<Widget> _pages = const [
     LearningTab(),
@@ -20,19 +20,30 @@ class _HomeScreenState extends State<HomeScreen> {
     ProfilePage(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: TabBarView(
+        controller: _tabController,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onItemTapped,
+        currentIndex: _tabController.index,
+        onTap: (index) {
+          _tabController.animateTo(index); // ← анимация
+        },
         backgroundColor: AppColors.primaryBackground,
         selectedItemColor: AppColors.alternate,
         unselectedItemColor: AppColors.secondaryText,

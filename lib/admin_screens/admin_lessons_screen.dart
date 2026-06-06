@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vpt_learn/services/admin_lessons_service.dart';
 import 'admin_exercises_screen.dart';
+import 'package:page_transition/page_transition.dart';
 import '/theme.dart';
 
 class AdminLessonsScreen extends StatefulWidget {
@@ -193,68 +194,70 @@ class _AdminLessonsScreenState extends State<AdminLessonsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Управление уроками'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _createLesson,
-            tooltip: 'Добавить урок',
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadLessons,
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _lessons.isEmpty
-              ? const Center(child: Text('Уроки не найдены'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: _lessons.length,
-                  itemBuilder: (context, index) {
-                    final lesson = _lessons[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                      child: ListTile(
-                        title: Text(lesson['title']),
-                        subtitle: lesson['content'] != null && lesson['content'].isNotEmpty
-                            ? Text(lesson['content'], maxLines: 1, overflow: TextOverflow.ellipsis)
-                            : null,
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () => _editLesson(lesson),
-                              tooltip: 'Редактировать',
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteLesson(lesson),
-                              tooltip: 'Удалить',
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AdminExercisesScreen(
-                                lessonId: lesson['lessonId'],
-                                lessonTitle: lesson['title'],
-                              ),
-                            ),
-                          );
-                        },
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('Управление уроками'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: _createLesson,
+          tooltip: 'Добавить урок',
+        ),
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          onPressed: _loadLessons,
+        ),
+      ],
+    ),
+    body: _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : _lessons.isEmpty
+            ? const Center(child: Text('Уроки не найдены'))
+            : ListView.builder(
+                padding: const EdgeInsets.all(8),
+                itemCount: _lessons.length,
+                itemBuilder: (context, index) {
+                  final lesson = _lessons[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    child: ListTile(
+                      title: Text(lesson['title']),
+                      subtitle: lesson['content'] != null && lesson['content'].isNotEmpty
+                          ? Text(lesson['content'], maxLines: 1, overflow: TextOverflow.ellipsis)
+                          : null,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () => _editLesson(lesson),
+                            tooltip: 'Редактировать',
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteLesson(lesson),
+                            tooltip: 'Удалить',
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                ),
-    );
-  }
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          PageTransition(
+                            type: PageTransitionType.rightToLeft,
+                            child: AdminExercisesScreen(
+                              lessonId: lesson['lessonId'],
+                              lessonTitle: lesson['title'],
+                            ),
+                            duration: const Duration(milliseconds: 300),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+  );
+}
 }

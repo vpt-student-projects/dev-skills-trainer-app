@@ -1,15 +1,14 @@
-// Замените содержимое information_base_screen.dart на этот код
 import 'package:vpt_learn/models/language_model.dart';
 import 'package:vpt_learn/services/knowledgebase_service.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import '../theme.dart';
-
 
 final KnowledgeBaseService _knowledgeBaseService = KnowledgeBaseService();
 
 class KnowledgeBasePage extends StatelessWidget {
   const KnowledgeBasePage({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,11 +46,12 @@ class KnowledgeBasePage extends StatelessWidget {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      // Перезагружаем страницу
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const KnowledgeBasePage(),
+                        PageTransition(
+                          type: PageTransitionType.fade,
+                          child: const KnowledgeBasePage(),
+                          duration: const Duration(milliseconds: 300),
                         ),
                       );
                     },
@@ -67,7 +67,7 @@ class KnowledgeBasePage extends StatelessWidget {
           }
 
           final languages = snapshot.data!;
-          
+
           if (languages.isEmpty) {
             return const Center(
               child: Text(
@@ -94,13 +94,15 @@ class KnowledgeBasePage extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => LanguageDetailScreen(
+                      PageTransition(
+                        type: PageTransitionType.rightToLeft,
+                        child: LanguageDetailScreen(
                           name: language.name,
                           description: language.description,
                           features: language.features,
                           example: language.example,
                         ),
+                        duration: const Duration(milliseconds: 300),
                       ),
                     );
                   },
@@ -113,7 +115,6 @@ class KnowledgeBasePage extends StatelessWidget {
     );
   }
 }
-
 
 class LanguageDetailScreen extends StatelessWidget {
   final String name;
@@ -142,7 +143,6 @@ class LanguageDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero анимация для названия
             Hero(
               tag: 'language_$name',
               child: Material(
@@ -159,8 +159,7 @@ class LanguageDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
-            // Описание
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(18),
@@ -202,10 +201,9 @@ class LanguageDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
-            // Особенности
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(18),
@@ -243,10 +241,9 @@ class LanguageDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
-            // Пример кода
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(18),
@@ -292,10 +289,9 @@ class LanguageDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 30),
-            
-            // Кнопка назад
+
             Center(
               child: ElevatedButton.icon(
                 onPressed: () => Navigator.pop(context),
@@ -311,7 +307,7 @@ class LanguageDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 20),
           ],
         ),

@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:vpt_learn/models/user_model.dart';
 import 'package:vpt_learn/services/admin_users_service.dart';
 import 'user_administration_screen.dart';
@@ -14,8 +15,10 @@ class AdminUsersScreen extends StatefulWidget {
 }
 
 class _AdminUsersScreenState extends State<AdminUsersScreen> {
- List<AdminUser> _users = [];
-   bool _isLoading = false;
+  List<AdminUser> _users = [];
+  bool _isLoading = false;
+  
+  @override
   void initState() {
     super.initState();
     _loadUsers();
@@ -96,12 +99,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                         onTap: () {
                           Navigator.push(
                             context,
-                           MaterialPageRoute(
-                              builder: (_) => UserAdministrationScreen(
+                            PageTransition(
+                              type: PageTransitionType.rightToLeft,
+                              child: UserAdministrationScreen(
                                 userUuid: user.userUuid,
                                 email: user.email,
                                 role: user.role,
                               ),
+                              duration: const Duration(milliseconds: 300),
                             ),
                           );
                         },

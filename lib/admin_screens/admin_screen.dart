@@ -11,8 +11,8 @@ class AdminScreen extends StatefulWidget {
   State<AdminScreen> createState() => _AdminScreenState();
 }
 
-class _AdminScreenState extends State<AdminScreen> {
-  int _currentIndex = 0;
+class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
   final List<Widget> _pages = const [
     AdminUsersScreen(),
@@ -20,22 +20,33 @@ class _AdminScreenState extends State<AdminScreen> {
     ProfilePage(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: TabBarView(
+        controller: _tabController,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: _tabController.index,
         backgroundColor: AppColors.primaryBackground,
         selectedItemColor: AppColors.alternate,
         unselectedItemColor: AppColors.secondaryText,
-        onTap: _onItemTapped,
+        onTap: (index) {
+          _tabController.animateTo(index); // ← анимация
+        },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.people),

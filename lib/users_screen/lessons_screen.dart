@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:vpt_learn/models/lesson_model.dart';
 import 'package:vpt_learn/services/lesson_service.dart';
 import 'exercises_screen.dart';
@@ -62,11 +63,10 @@ class _LessonsScreenState extends State<LessonsScreen> {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => CompilerExerciseScreen(
-                                    exerciseId: lesson.lessonId,
-                                    title: lesson.title,
-                                  ),
+                                PageTransition(
+                                  type: PageTransitionType.rightToLeft,
+                                  child: ExercisesScreen(lessonId: lesson.lessonId),
+                                  duration: const Duration(milliseconds: 300),
                                 ),
                               );
                             },
@@ -76,18 +76,4 @@ class _LessonsScreenState extends State<LessonsScreen> {
                     ),
     );
   }
-}
-
-class Lesson {
-  final int id;
-  final int coursesId;
-  final String title;
-  final String content;
-
-  Lesson({
-    required this.id,
-    required this.coursesId,
-    required this.title,
-    required this.content,
-  });
 }

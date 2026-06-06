@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:vpt_learn/services/admin_courses_service.dart';
 import 'admin_lessons_screen.dart';
+import 'package:page_transition/page_transition.dart';
 import '/theme.dart';
 
 class AdminCoursesScreen extends StatefulWidget {
@@ -217,10 +218,10 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => AdminLessonsScreen(
-                                courseId: course['courseId'],
-                              ),
+                            PageTransition(
+                              type: PageTransitionType.rightToLeft,
+                              child: AdminLessonsScreen(courseId: course['courseId']),
+                              duration: const Duration(milliseconds: 300),
                             ),
                           );
                         },

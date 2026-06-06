@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:vpt_learn/services/api_client.dart';
 import '../theme.dart';
 
@@ -26,8 +27,10 @@ class KnowledgeBasePage extends StatelessWidget {
               print('Нажали на $language');
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => LanguageDetailScreen(language: language),
+                PageTransition(
+                  type: PageTransitionType.rightToLeft,
+                  child: LanguageDetailScreen(language: language),
+                  duration: const Duration(milliseconds: 300),
                 ),
               );
             },

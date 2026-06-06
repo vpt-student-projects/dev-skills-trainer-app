@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:vpt_learn/models/course_model.dart';
 import 'package:vpt_learn/services/course_service.dart';
 import '../theme.dart';
@@ -9,13 +10,12 @@ class LearningTab extends StatefulWidget {
 
   @override
   State<LearningTab> createState() => _LearningTabState();
-  
 }
 
 class _LearningTabState extends State<LearningTab> {
-  List<CourseModel> courses =  [];
-
+  List<CourseModel> courses = [];
   bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -37,8 +37,10 @@ class _LearningTabState extends State<LearningTab> {
   void _openLessonsScreen(int courseId) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => LessonsScreen(courseId: courseId),
+      PageTransition(
+        type: PageTransitionType.rightToLeft,
+        child: LessonsScreen(courseId: courseId),
+        duration: const Duration(milliseconds: 300),
       ),
     );
   }
@@ -108,18 +110,4 @@ class _LearningTabState extends State<LearningTab> {
                 ),
     );
   }
-}
-
-class Course {
-  final int id;
-  final String title;
-  final String description;
-  final double progress;
-
-  const Course({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.progress,
-  });
 }
