@@ -13,7 +13,6 @@ namespace VPT_Learn.Controllers
 
     public class LessonsController : ControllerBase
     {
-
         private readonly ISupabaseUserClientFactory _clientFactory;
 
         public LessonsController(ISupabaseUserClientFactory clientFactory)
@@ -28,7 +27,6 @@ namespace VPT_Learn.Controllers
             var client = await _clientFactory.CreateAsync(HttpContext);
 
             // Получаем упражнения по уроку
-            // Получаем упражнения
             var exerciseResponse = await client
                 .From<Exercise>()
                 .Filter("lesson_id", Supabase.Postgrest.Constants.Operator.Equals, lessonId)
@@ -74,16 +72,14 @@ namespace VPT_Learn.Controllers
             });
         }
 
-
         [HttpGet("alllessons")]
         [Tags("Tasks Management")]
-
-        public async Task<IActionResult> AllLesssons([FromQuery] int courseid)
+        public async Task<IActionResult> AllLessons([FromQuery] int courseId)
         {
             var client = await _clientFactory.CreateAsync(HttpContext);
             var data = await client
                 .From<Models.Lesson>()
-                .Filter("course_id", Supabase.Postgrest.Constants.Operator.Equals, courseid)
+                .Filter("course_id", Supabase.Postgrest.Constants.Operator.Equals, courseId)
                 .Get();
 
             var lessons = data.Models.Select(e => new LessonDTO
@@ -102,7 +98,110 @@ namespace VPT_Learn.Controllers
                 lessons = lessons
             });
         }
+
+        [HttpPost]
+        [Tags("Tasks Management")]
+        public async Task<IActionResult> CreateLesson([FromBody] LessonDTO lessonDto)
+        {
+            var client = await _clientFactory.CreateAsync(HttpContext);
+
+            var lesson = new Lesson
+            {
+                CourseId = lessonDto.CourseId,
+                Title = lessonDto.Title,
+                Content = lessonDto.Content,
+                OrderIndex = lessonDto.OrderIndex,
+                Type = lessonDto.Type
+            };
+
+            var response = await client.From<Lesson>().Insert(lesson);
+
+            if (response.Models == null || !response.Models.Any())
+            {
+                return BadRequest(new { message = "Не удалось создать урок" });
+            }
+
+            var createdLesson = response.Models.First();
+            var lessonResponse = new LessonDTO
+            {
+                LessonId = createdLesson.LessonId,
+                CourseId = createdLesson.CourseId,
+                Title = createdLesson.Title,
+                Content = createdLesson.Content,
+                OrderIndex = createdLesson.OrderIndex,
+                Type = createdLesson.Type
+            };
+
+            return Ok(new
+            {
+                message = "Урок успешно создан",
+                lesson = lessonResponse
+            });
+        }
+
+        [HttpPut("{lessonId}")]
+        [Tags("Tasks Management")]
+        public async Task<IActionResult> UpdateLesson(int lessonId, [FromBody] LessonDTO lessonDto)
+        {
+            var client = await _clientFactory.CreateAsync(HttpContext);
+
+            var lesson = new Lesson
+            {
+                LessonId = lessonId,
+                CourseId = lessonDto.CourseId,
+                Title = lessonDto.Title,
+                Content = lessonDto.Content,
+                OrderIndex = lessonDto.OrderIndex,
+                Type = lessonDto.Type
+            };
+
+            var response = await client.From<Lesson>().Update(lesson);
+
+            if (response.Models == null || !response.Models.Any())
+            {
+                return NotFound(new { message = "Урок не найден" });
+            }
+
+            var updatedLesson = response.Models.First();
+            var lessonResponse = new LessonDTO
+            {
+                LessonId = updatedLesson.LessonId,
+                CourseId = updatedLesson.CourseId,
+                Title = updatedLesson.Title,
+                Content = updatedLesson.Content,
+                OrderIndex = updatedLesson.OrderIndex,
+                Type = updatedLesson.Type
+            };
+
+            return Ok(new
+            {
+                message = "Урок успешно обновлен",
+                lesson = lessonResponse
+            });
+        }
+
+        [HttpDelete("{lessonId}")]
+        [Tags("Tasks Management")]
+        public async Task<IActionResult> DeleteLesson(int lessonId)
+        {
+            var client = await _clientFactory.CreateAsync(HttpContext);
+
+            var existingLesson = await client.From<Models.Lesson>()
+                .Filter(c => c.CourseId, Supabase.Postgrest.Constants.Operator.Equals, lessonId)
+                .Single();
+
+            if (existingLesson == null)
+            {
+                return NotFound(new { message = "Урок не найден" });
+            }
+            
+            await client.From<Models.Lesson>().Where(c => c.LessonId == lessonId).Delete();
+
+
+            return Ok(new
+            {
+                message = "Урок успешно удален"
+            });
+        }
     }
-
-
 }
