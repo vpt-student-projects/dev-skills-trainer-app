@@ -2,13 +2,17 @@ class CourseModel {
   final int id;
   final String title;
   final String description;
-  final double? progress; // nullable
+  final String language;      // ← новое поле
+  final String level;         // ← новое поле
+  final double? progress;
 
   CourseModel({
     required this.id,
     required this.title,
     required this.description,
-    this.progress, // может быть null
+    required this.language,
+    required this.level,
+    this.progress,
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> json) {
@@ -16,9 +20,11 @@ class CourseModel {
       id: json['courseId'],
       title: json['title'],
       description: json['description'],
+      language: json['language'] ?? 'python',      // ← новое
+      level: json['level'] ?? 'начальный',         // ← новое
       progress: json['progress'] != null
           ? (json['progress'] as num).toDouble()
-          : null, // nullable
+          : null,
     );
   }
 }

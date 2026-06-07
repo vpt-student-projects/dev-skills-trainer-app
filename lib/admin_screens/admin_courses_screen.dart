@@ -1,8 +1,8 @@
-// lib/admin_screens/admin_courses_screen.dart
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:vpt_learn/services/admin_courses_service.dart';
 import 'admin_lessons_screen.dart';
-import 'package:page_transition/page_transition.dart';
 import '/theme.dart';
 
 class AdminCoursesScreen extends StatefulWidget {
@@ -16,6 +16,9 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
   List<Map<String, dynamic>> _courses = [];
   bool _isLoading = true;
   final AdminCoursesService _service = AdminCoursesService();
+
+  final List<String> _languages = ['python', 'c#'];
+  final List<String> _levels = ['начальный', 'продвинутый'];
 
   @override
   void initState() {
@@ -38,43 +41,82 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
   Future<void> _createCourse() async {
     final titleController = TextEditingController();
     final descController = TextEditingController();
+    String selectedLanguage = _languages[0];
+    String selectedLevel = _levels[0];
 
     final result = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Новый курс'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Название'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text('Новый курс'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(labelText: 'Название'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: descController,
+                    decoration: const InputDecoration(labelText: 'Описание'),
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedLanguage,
+                    decoration: const InputDecoration(labelText: 'Язык'),
+                    items: _languages.map((lang) {
+                      return DropdownMenuItem(value: lang, child: Text(lang));
+                    }).toList(),
+                    onChanged: (value) {
+                      setStateDialog(() {
+                        selectedLanguage = value!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedLevel,
+                    decoration: const InputDecoration(labelText: 'Уровень'),
+                    items: _levels.map((level) {
+                      return DropdownMenuItem(value: level, child: Text(level));
+                    }).toList(),
+                    onChanged: (value) {
+                      setStateDialog(() {
+                        selectedLevel = value!;
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: descController,
-              decoration: const InputDecoration(labelText: 'Описание'),
-              maxLines: 3,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Отмена'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Создать'),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Отмена'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Создать'),
+              ),
+            ],
+          );
+        },
       ),
     );
 
     if (result != true) return;
 
     try {
-      await _service.createCourse(titleController.text, descController.text);
+      await _service.createCourse(
+        title: titleController.text,
+        description: descController.text,
+        language: selectedLanguage,
+        level: selectedLevel,
+      );
       await _loadCourses();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Курс создан')),
@@ -89,43 +131,83 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
   Future<void> _editCourse(Map<String, dynamic> course) async {
     final titleController = TextEditingController(text: course['title']);
     final descController = TextEditingController(text: course['description'] ?? '');
+    String selectedLanguage = course['language'] ?? _languages[0];
+    String selectedLevel = course['level'] ?? _levels[0];
 
     final result = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Редактировать курс'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Название'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text('Редактировать курс'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(labelText: 'Название'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: descController,
+                    decoration: const InputDecoration(labelText: 'Описание'),
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedLanguage,
+                    decoration: const InputDecoration(labelText: 'Язык'),
+                    items: _languages.map((lang) {
+                      return DropdownMenuItem(value: lang, child: Text(lang));
+                    }).toList(),
+                    onChanged: (value) {
+                      setStateDialog(() {
+                        selectedLanguage = value!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedLevel,
+                    decoration: const InputDecoration(labelText: 'Уровень'),
+                    items: _levels.map((level) {
+                      return DropdownMenuItem(value: level, child: Text(level));
+                    }).toList(),
+                    onChanged: (value) {
+                      setStateDialog(() {
+                        selectedLevel = value!;
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: descController,
-              decoration: const InputDecoration(labelText: 'Описание'),
-              maxLines: 3,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Отмена'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Сохранить'),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Отмена'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Сохранить'),
+              ),
+            ],
+          );
+        },
       ),
     );
 
     if (result != true) return;
 
     try {
-      await _service.updateCourse(course['courseId'], titleController.text, descController.text);
+      await _service.updateCourse(
+        course['courseId'],
+        title: titleController.text,
+        description: descController.text,
+        language: selectedLanguage,
+        level: selectedLevel,
+      );
       await _loadCourses();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Курс обновлён')),
@@ -202,9 +284,17 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
                       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                       child: ListTile(
                         title: Text(course['title']),
-                        subtitle: course['description'] != null
-                            ? Text(course['description'], maxLines: 1)
-                            : null,
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (course['description'] != null)
+                              Text(course['description'], maxLines: 1),
+                            Text(
+                              '${course['language'] ?? '?'} | ${course['level'] ?? '?'}',
+                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
                         trailing: PopupMenuButton<String>(
                           onSelected: (value) {
                             if (value == 'edit') _editCourse(course);
@@ -218,10 +308,10 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            PageTransition(
-                              type: PageTransitionType.rightToLeft,
-                              child: AdminLessonsScreen(courseId: course['courseId']),
-                              duration: const Duration(milliseconds: 300),
+                            MaterialPageRoute(
+                              builder: (context) => AdminLessonsScreen(
+                                courseId: course['courseId'],
+                              ),
                             ),
                           );
                         },

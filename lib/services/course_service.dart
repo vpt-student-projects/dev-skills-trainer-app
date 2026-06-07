@@ -6,7 +6,6 @@ class CourseService {
 
   Future<List<CourseModel>> fetchCourses() async {
     final data = await _api.get('/courses/allcourses');
-
     final List list = data['courses'];
     return list.map((e) => CourseModel.fromJson(e)).toList();
   }

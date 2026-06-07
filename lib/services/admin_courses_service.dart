@@ -8,17 +8,32 @@ class AdminCoursesService {
     return List<Map<String, dynamic>>.from(data['courses']);
   }
 
-  Future<void> createCourse(String title, String description) async {
+  Future<void> createCourse({
+    required String title,
+    required String description,
+    required String language,
+    required String level,
+  }) async {
     await _api.post('/courses', {
       'title': title,
       'description': description,
+      'language': language,
+      'level': level,
     });
   }
 
-  Future<void> updateCourse(int courseId, String title, String description) async {
+  Future<void> updateCourse(
+    int courseId, {
+    required String title,
+    required String description,
+    required String language,
+    required String level,
+  }) async {
     await _api.put('/courses/$courseId', {
       'title': title,
       'description': description,
+      'language': language,
+      'level': level,
     });
   }
 
