@@ -30,4 +30,11 @@ namespace VPT_Learn.Models
             public int QuestionId { get; set; }
             public bool IsCorrect { get; set; }
         }
+
+        public class SubmitTestRequest
+        {
+            public List<UserTestAnswer> Answers { get; set; }
+        }
+
+        // Класс UserTestAnswer должен выглядеть примерно так:
 }

@@ -272,7 +272,7 @@ namespace VPT_Learn.Controllers
         /// Детальная проверка теста с пояснениями
         /// </summary>
         [HttpPost("submit-test/{lessonId}")]
-        public async Task<IActionResult> SubmitTest(int lessonId, [FromBody] List<UserTestAnswer> userAnswers)
+        public async Task<IActionResult> SubmitTest(int lessonId, [FromBody] SubmitTestRequest request)
         {
             try
             {
@@ -282,8 +282,8 @@ namespace VPT_Learn.Controllers
                 if (exercises == null || !exercises.Any())
                     return BadRequest(new { message = "Для этого урока нет заданий" });
                 
-                // Проверяем ответы
-                var result = _testCheckingService.CheckUserAnswers(exercises, userAnswers);
+                // Проверяем ответы (используем request.Answers вместо userAnswers)
+                var result = _testCheckingService.CheckUserAnswers(exercises, request.Answers);
                 
                 // Сохраняем результат в БД (опционально)
                 // await SaveTestResult(lessonId, userId, result);
