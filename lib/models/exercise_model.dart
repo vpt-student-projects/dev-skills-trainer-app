@@ -3,7 +3,7 @@ class ExerciseModel {
   final int lessonId;
   final String taskDescription;
   final String rightAnswer;
-  final List<String> options;
+  final List<AnswerOption> options;
 
   ExerciseModel({
     required this.exerciseId,
@@ -15,16 +15,12 @@ class ExerciseModel {
 
   factory ExerciseModel.fromJson(Map<String, dynamic> json) {
     final List<dynamic> answersJson = json['answers'] ?? [];
-    final List<String> options = answersJson
-        .map((a) => a['answer'].toString())
+    final List<AnswerOption> options = answersJson
+        .map((a) => AnswerOption(
+              answerId: a['answerId'] ?? a['id'] ?? 0,
+              text: a['answer'].toString(),
+            ))
         .toList();
-
-    // // Гарантируем, что правильный ответ присутствует
-    // if (!options.contains(json['rightAnswer'])) {
-    //   options.add(json['rightAnswer']);
-    // }
-
-    options.shuffle(); // перемешиваем варианты
 
     return ExerciseModel(
       exerciseId: json['exerciseId'],
@@ -34,4 +30,11 @@ class ExerciseModel {
       options: options,
     );
   }
+}
+
+class AnswerOption {
+  final int answerId;
+  final String text;
+
+  AnswerOption({required this.answerId, required this.text});
 }

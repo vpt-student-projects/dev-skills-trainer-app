@@ -15,12 +15,14 @@ class ExercisesScreen extends StatefulWidget {
 class _ExercisesScreenState extends State<ExercisesScreen> {
   List<ExerciseModel> _exercises = [];
   bool _isLoading = true;
+  bool _isSubmitting = false;
   String? _errorMessage;
   
-  // Хранит выбранные ответы: ключ = индекс вопроса, значение = выбранный ответ
-  Map<int, String?> _selectedAnswers = {};
+  // Хранит выбранные answerId: ключ = индекс вопроса, значение = answerId
+  Map<int, int?> _selectedAnswerIds = {};
   
   bool _showResults = false;
+  Map<String, dynamic>? _resultData;
 
   @override
   void initState() {
@@ -33,8 +35,8 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
       _exercises = await LessonService().fetchExercises(widget.lessonId);
       setState(() {
         _isLoading = false;
-        // Инициализируем выбранные ответы как null для всех вопросов
-        _selectedAnswers = {for (int i = 0; i < _exercises.length; i++) i: null};
+        // Инициализируем выбранные answerId как null для всех вопросов
+        _selectedAnswerIds = {for (int i = 0; i < _exercises.length; i++) i: null};
       });
     } catch (e) {
       setState(() {
@@ -44,9 +46,9 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
     }
   }
 
-  void _submitAnswers() {
+  Future<void> _submitAnswers() async {
     // Проверяем, что на все вопросы даны ответы
-    final hasUnanswered = _selectedAnswers.values.any((answer) => answer == null);
+    final hasUnanswered = _selectedAnswerIds.values.any((id) => id == null);
     if (hasUnanswered) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Ответьте на все вопросы!')),
@@ -55,14 +57,46 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
     }
     
     setState(() {
-      _showResults = true;
+      _isSubmitting = true;
     });
+
+    try {
+      // Формируем список для отправки
+      final List<Map<String, int>> answersToSend = [];
+      for (int i = 0; i < _exercises.length; i++) {
+        final exercise = _exercises[i];
+        final selectedAnswerId = _selectedAnswerIds[i];
+        if (selectedAnswerId != null) {
+          answersToSend.add({
+            'exerciseId': exercise.exerciseId,
+            'selectedAnswerId': selectedAnswerId,
+          });
+        }
+      }
+
+      // Отправляем на сервер
+      final result = await LessonService().submitAnswers(widget.lessonId, answersToSend);
+      
+      setState(() {
+        _showResults = true;
+        _resultData = result;
+        _isSubmitting = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка при отправке: $e')),
+      );
+    }
   }
 
   void _resetQuiz() {
     setState(() {
       _showResults = false;
-      _selectedAnswers = {for (int i = 0; i < _exercises.length; i++) i: null};
+      _selectedAnswerIds = {for (int i = 0; i < _exercises.length; i++) i: null};
+      _resultData = null;
     });
   }
 
@@ -109,77 +143,94 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
         title: Text('Тест (${_exercises.length} вопросов)'),
         backgroundColor: AppColors.secondary,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Индикатор прогресса
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.secondaryBackground,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Прогресс: ${_selectedAnswers.values.where((a) => a != null).length}/${_exercises.length}',
-                    style: const TextStyle(color: AppColors.alternate),
-                  ),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: _selectedAnswers.values.where((a) => a != null).length / _exercises.length,
-                    backgroundColor: Colors.grey,
-                    color: AppColors.completed,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            
-            // Все вопросы
-            ...List.generate(_exercises.length, (index) {
-              final exercise = _exercises[index];
-              return _buildQuestionCard(
-                index: index,
-                question: exercise.taskDescription,
-                options: exercise.options,
-                selectedAnswer: _selectedAnswers[index],
-                onChanged: (value) {
-                  setState(() {
-                    _selectedAnswers[index] = value;
-                  });
-                },
-              );
-            }),
-            
-            const SizedBox(height: 24),
-            
-            // Кнопка отправки
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _submitAnswers,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.alternate,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Индикатор прогресса
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondaryBackground,
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Прогресс: ${_selectedAnswerIds.values.where((a) => a != null).length}/${_exercises.length}',
+                        style: const TextStyle(color: AppColors.alternate),
+                      ),
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: _selectedAnswerIds.values.where((a) => a != null).length / _exercises.length,
+                        backgroundColor: Colors.grey,
+                        color: AppColors.completed,
+                      ),
+                    ],
+                  ),
                 ),
-                child: const Text(
-                  '📤 Отправить ответы',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const SizedBox(height: 24),
+                
+                // Все вопросы
+                ...List.generate(_exercises.length, (index) {
+                  final exercise = _exercises[index];
+                  return _buildQuestionCard(
+                    index: index,
+                    question: exercise.taskDescription,
+                    options: exercise.options,
+                    selectedAnswerId: _selectedAnswerIds[index],
+                    onChanged: (answerId) {
+                      setState(() {
+                        _selectedAnswerIds[index] = answerId;
+                      });
+                    },
+                  );
+                }),
+                
+                const SizedBox(height: 24),
+                
+                // Кнопка отправки
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submitAnswers,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.alternate,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text(
+                            '📤 Отправить ответы',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                  ),
                 ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+          if (_isSubmitting)
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: CircularProgressIndicator(),
               ),
             ),
-            const SizedBox(height: 20),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -187,9 +238,9 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
   Widget _buildQuestionCard({
     required int index,
     required String question,
-    required List<String> options,
-    required String? selectedAnswer,
-    required void Function(String?) onChanged,
+    required List<AnswerOption> options,
+    required int? selectedAnswerId,
+    required void Function(int?) onChanged,
   }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 20),
@@ -232,10 +283,10 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            ...options.map((option) => RadioListTile<String>(
-              title: Text(option),
-              value: option,
-              groupValue: selectedAnswer,
+            ...options.map((option) => RadioListTile<int>(
+              title: Text(option.text),
+              value: option.answerId,
+              groupValue: selectedAnswerId,
               onChanged: onChanged,
               activeColor: AppColors.alternate,
               contentPadding: EdgeInsets.zero,
@@ -248,26 +299,46 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
   }
 
   Widget _buildResultsScreen() {
-    // Подсчитываем результаты
-    int correctCount = 0;
+    // Используем данные с сервера если есть, иначе считаем локально
+    int correctCount = _resultData?['correctCount'] ?? 0;
+    int totalCount = _resultData?['totalCount'] ?? _exercises.length;
+    int percent = _resultData?['percent'] ?? (totalCount > 0 ? (correctCount / totalCount * 100).round() : 0);
+    
+    // Строим список результатов
     final List<Map<String, dynamic>> results = [];
-    
-    for (int i = 0; i < _exercises.length; i++) {
-      final exercise = _exercises[i];
-      final userAnswer = _selectedAnswers[i];
-      final isCorrect = userAnswer == exercise.rightAnswer;
-      if (isCorrect) correctCount++;
-      
-      results.add({
-        'index': i + 1,
-        'question': exercise.taskDescription,
-        'userAnswer': userAnswer ?? '(нет ответа)',
-        'correctAnswer': exercise.rightAnswer,
-        'isCorrect': isCorrect,
-      });
+    if (_resultData != null && _resultData!['details'] != null) {
+      // Используем данные с сервера
+      final details = _resultData!['details'] as List;
+      for (var detail in details) {
+        results.add({
+          'index': detail['index'] ?? results.length + 1,
+          'question': detail['question'] ?? '',
+          'userAnswer': detail['userAnswer'] ?? '(нет ответа)',
+          'correctAnswer': detail['correctAnswer'] ?? '',
+          'isCorrect': detail['isCorrect'] ?? false,
+        });
+      }
+    } else {
+      // Локальный подсчёт (fallback)
+      for (int i = 0; i < _exercises.length; i++) {
+        final exercise = _exercises[i];
+        final selectedOption = exercise.options.firstWhere(
+          (opt) => opt.answerId == _selectedAnswerIds[i],
+          orElse: () => AnswerOption(answerId: -1, text: '(нет ответа)'),
+        );
+        final isCorrect = selectedOption.text == exercise.rightAnswer;
+        if (isCorrect) correctCount++;
+        
+        results.add({
+          'index': i + 1,
+          'question': exercise.taskDescription,
+          'userAnswer': selectedOption.text,
+          'correctAnswer': exercise.rightAnswer,
+          'isCorrect': isCorrect,
+        });
+      }
+      percent = (correctCount / _exercises.length * 100).round();
     }
-    
-    final percent = (correctCount / _exercises.length * 100).round();
     
     return Scaffold(
       appBar: AppBar(
@@ -297,7 +368,7 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
             child: Column(
               children: [
                 Text(
-                  '$correctCount / ${_exercises.length}',
+                  '$correctCount / $totalCount',
                   style: const TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
