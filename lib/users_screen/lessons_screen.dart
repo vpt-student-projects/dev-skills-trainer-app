@@ -61,12 +61,21 @@ class _LessonsScreenState extends State<LessonsScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             onTap: () {
+                              lesson.type == "code" ? 
                               Navigator.push(
                                 context,
                                 PageTransition(
                                   type: PageTransitionType.rightToLeft,
                                   child: ExercisesScreen(lessonId: lesson.lessonId),
                                   duration: const Duration(milliseconds: 300),
+                                ),
+                              ) : Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ExercisesScreen(
+                                    lessonId: lesson.lessonId,
+                                    //title: lesson.title,
+                                  ),
                                 ),
                               );
                             },
