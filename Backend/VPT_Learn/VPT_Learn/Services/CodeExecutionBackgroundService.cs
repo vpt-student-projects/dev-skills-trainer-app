@@ -127,11 +127,22 @@ namespace VPT_Learn.Services
 
         private string ReturnOutput(string taskId, string status, string output)
         {
+            var lines = output.Split('\n');
+            string exitCode = lines[0].Split('=')[1];
+                // Убираем завершающие символы новой строки
+    
+    // Опционально: убираем пробелы в конце
+            string data = string.Join("\n", lines.Skip(1));
+            data = data.TrimEnd('\n', '\r');
+            data = data.TrimEnd();
+
+
             var result = new TaskResult
             {
                 TaskId = taskId,
                 Status = status,
-                Output = output,
+                ExitCode = exitCode,
+                Output = data,
                 CompletedAt = DateTime.UtcNow
             };
             _taskResults[taskId] = result;
@@ -150,6 +161,7 @@ namespace VPT_Learn.Services
     {
         public string TaskId { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public string ExitCode  { get; set; } = string.Empty;
         public string Output { get; set; } = string.Empty;
         public DateTime CompletedAt { get; set; }
     }

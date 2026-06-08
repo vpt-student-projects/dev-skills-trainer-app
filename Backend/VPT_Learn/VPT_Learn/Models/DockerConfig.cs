@@ -7,10 +7,10 @@ public class DockerConfig
 
     public static string GetDockerImage(string language) => language switch
         {
-            "cpp" => "vpt_learndocker-c-sandbox",
-            "csharp" => "vpt_learndocker-csharp-sandbox",
-            "python" => "vpt_learndocker-python-sandbox:latest",
-            "java" => "vpt_learndocker-java-sandbox:latest",
+            "cpp" => "vpt_learn-c-sandbox",
+            "csharp" => "vpt_learn-csharp-sandbox",
+            "python" => "vpt_learn-python-sandbox:latest",
+            "java" => "vpt_learn-java-sandbox:latest",
             _ => throw new ArgumentException("Unsupported language")
         };
         public static List<string> GetExecuteCommand(string language, string fileName) => language switch
@@ -41,7 +41,7 @@ public class DockerConfig
         {
             "python" => "py",
             "cpp" => "cpp",
-            "csharp" => "cs",
+            "csharp" => "csx",
             "java" => "java",
             _ => throw new ArgumentException("Unsupported language")
         };
