@@ -24,4 +24,10 @@ namespace VPT_Learn.Models
         // Для DTO: список всех ответов
         public List<AnswerClass> Answers { get; set; }
     }
+    // @ExerciseResult.cs
+        public class ExerciseResult
+        {
+            public int QuestionId { get; set; }
+            public bool IsCorrect { get; set; }
+        }
 }

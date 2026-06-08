@@ -4,6 +4,7 @@ using Supabase;
 using Supabase.Gotrue;
 using Supabase.Gotrue.Interfaces;
 using VPT_Learn.Models;
+using VPT_Learn.Services;
 
 namespace VPT_Learn.Controllers
 {
@@ -14,10 +15,13 @@ namespace VPT_Learn.Controllers
     public class LessonsController : ControllerBase
     {
         private readonly ISupabaseUserClientFactory _clientFactory;
+        private readonly TestCheckingService _testCheckingService;
 
         public LessonsController(ISupabaseUserClientFactory clientFactory)
         {
             _clientFactory = clientFactory;
+            _testCheckingService = new TestCheckingService();
+
         }
 
         [Tags("Tasks Management")]
@@ -194,7 +198,7 @@ namespace VPT_Learn.Controllers
             {
                 return NotFound(new { message = "Урок не найден" });
             }
-            
+
             await client.From<Models.Lesson>().Where(c => c.LessonId == lessonId).Delete();
 
 
@@ -203,5 +207,109 @@ namespace VPT_Learn.Controllers
                 message = "Урок успешно удален"
             });
         }
+
+        private async Task<List<Exercise>> GetExercisesByLessonId(int lessonId)
+        {
+            var client = await _clientFactory.CreateAsync(HttpContext);
+            
+            // Получаем упражнения по уроку
+            var exerciseResponse = await client
+                .From<Exercise>()
+                .Filter("lesson_id", Supabase.Postgrest.Constants.Operator.Equals, lessonId)
+                .Order("order_index", Supabase.Postgrest.Constants.Ordering.Ascending)
+                .Get();
+            
+            if (!exerciseResponse.Models.Any())
+                return new List<Exercise>();
+            
+            var exercises = exerciseResponse.Models.ToList();
+            
+            // Получаем все ответы для этих упражнений
+            var exerciseIds = exercises.Select(e => e.ExerciseId).ToList();
+            var answersResponse = await client
+                .From<AnswerClass>()
+                .Filter("exercise_id", Supabase.Postgrest.Constants.Operator.In, exerciseIds)
+                .Get();
+            
+            // Группируем ответы по exercise_id
+            var answersByExerciseId = answersResponse.Models
+                .GroupBy(a => a.ExerciseId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+            
+            // Привязываем ответы к упражнениям
+            foreach (var exercise in exercises)
+            {
+                exercise.Answers = answersByExerciseId.GetValueOrDefault(exercise.ExerciseId, new List<AnswerClass>());
+            }
+            
+            return exercises;
+        }
+
+        /// <summary>
+        /// Получить все ответы для всех упражнений урока
+        /// </summary>
+        private async Task<List<AnswerClass>> GetAllAnswersForLesson(int lessonId)
+        {
+            var client = await _clientFactory.CreateAsync(HttpContext);
+            
+            // Сначала получаем все упражнения урока
+            var exercises = await GetExercisesByLessonId(lessonId);
+            var exerciseIds = exercises.Select(e => e.ExerciseId).ToList();
+            
+            if (!exerciseIds.Any())
+                return new List<AnswerClass>();
+            
+            // Получаем все ответы для этих упражнений
+            var answersResponse = await client
+                .From<AnswerClass>()
+                .Filter("exercise_id", Supabase.Postgrest.Constants.Operator.In, exerciseIds)
+                .Get();
+            
+            return answersResponse.Models.ToList();
+        }
+
+        /// <summary>
+        /// Детальная проверка теста с пояснениями
+        /// </summary>
+        [HttpPost("submit-test/{lessonId}")]
+        public async Task<IActionResult> SubmitTest(int lessonId, [FromBody] List<UserTestAnswer> userAnswers)
+        {
+            try
+            {
+                // Получаем все упражнения для урока
+                var exercises = await GetExercisesByLessonId(lessonId);
+                
+                if (exercises == null || !exercises.Any())
+                    return BadRequest(new { message = "Для этого урока нет заданий" });
+                
+                // Проверяем ответы
+                var result = _testCheckingService.CheckUserAnswers(exercises, userAnswers);
+                
+                // Сохраняем результат в БД (опционально)
+                // await SaveTestResult(lessonId, userId, result);
+                
+                return Ok(new 
+                { 
+                    message = "Тест проверен",
+                    result = new
+                    {
+                        result.CorrectCount,
+                        result.IncorrectCount,
+                        result.TotalQuestions,
+                        result.ScorePercentage,
+                        details = result.Results.Select(r => new 
+                        { 
+                            r.QuestionId, 
+                            r.IsCorrect 
+                        })
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Ошибка при проверке теста: {ex.Message}" });
+            }
+        }
+
     }
 }
