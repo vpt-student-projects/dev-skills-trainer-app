@@ -16,12 +16,12 @@ namespace VPT_Learn.Controllers
             _worker = worker;
         }
 
-        public record ExecuteRequest(string Code, string Language);
+        public record ExecuteRequest(string Code, string Language, int ExerciseId, int UserId);
 
         [HttpPost("execute")]
         public ActionResult Execute([FromBody] ExecuteRequest request)
         {
-            var taskId = _worker.EnqueueTask(request.Code, request.Language);
+            var taskId = _worker.EnqueueTaskWithSubmission(request.Code, request.Language, request.ExerciseId, request.UserId);
             return Ok(new { taskId });
         }
 
@@ -33,7 +33,15 @@ namespace VPT_Learn.Controllers
             {
                 return NotFound(new { message = $"Task with ID {taskId} not found" });
             }
-            return Ok(result);
+            return Ok(new
+            {
+               result.TaskId,
+                result.Status,
+                result.ExitCode,
+                result.Output,
+                result.CompletedAt,
+                result.IsCorrect, // Теперь отображается
+            });
         }
     }
 }

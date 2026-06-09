@@ -115,7 +115,7 @@ namespace VPT_Learn
 
             builder.Configuration.AddEnvironmentVariables();
             var url = Environment.GetEnvironmentVariable("SUPABASE_URL");
-            var key = Environment.GetEnvironmentVariable("SUPABASE_KEY");
+            var key = Environment.GetEnvironmentVariable("SUPABASE_SERVICE_ROLE_KEY");
 // ✅ Правильная регистрация с передачей API ключа в Gotrue
             builder.Services.AddSingleton<Supabase.Client>(_ =>
             {
