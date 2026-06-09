@@ -60,6 +60,15 @@ namespace VPT_Learn.Services
                 UserId = userId,
                 SaveToDatabase = true
             });
+                _taskResults[taskId] = new TaskResult
+            {
+                TaskId = taskId,
+                Status = "pending",
+                Output = "",
+                ExitCode = "",
+                CompletedAt = DateTime.UtcNow,
+                IsCorrect = null
+            };
             return taskId;
         }
 

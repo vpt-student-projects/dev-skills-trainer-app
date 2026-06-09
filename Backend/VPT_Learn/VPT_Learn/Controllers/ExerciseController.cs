@@ -27,8 +27,7 @@ namespace VPT_Learn.Controllers
 
             var exercise = await client
                 .From<CodeExercise>()
-                .Filter(
-                    x => x.LessonId,
+                .Filter(x => x.LessonId,
                     Supabase.Postgrest.Constants.Operator.Equals,
                     lessonId)
                 .Single();
