@@ -66,7 +66,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
                                 context,
                                 PageTransition(
                                   type: PageTransitionType.rightToLeft,
-                                  child: ExercisesScreen(lessonId: lesson.lessonId),
+                                  child: CompilerExerciseScreen(lessonId: lesson.lessonId, title: lesson.title,),
                                   duration: const Duration(milliseconds: 300),
                                 ),
                               ) : Navigator.push(

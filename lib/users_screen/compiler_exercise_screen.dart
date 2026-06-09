@@ -3,12 +3,12 @@ import 'package:vpt_learn/services/api_client.dart';
 import '../theme.dart';
 
 class CompilerExerciseScreen extends StatefulWidget {
-  final int exerciseId;
+  final int lessonId;
   final String title;
 
   const CompilerExerciseScreen({
     super.key,
-    required this.exerciseId,
+    required this.lessonId,
     required this.title,
   });
 
@@ -21,7 +21,8 @@ class _CompilerExerciseScreenState extends State<CompilerExerciseScreen> {
   String _output = '';
   bool _isRunning = false;
   String _description = '';
-  String _selectedLanguage = 'csharp'; // язык по умолчанию
+  String _selectedLanguage = 'python'; // язык по умолчанию
+  int? _exerciseId;
   final ApiClient _api = ApiClient();
 
   // Список доступных языков
@@ -41,57 +42,90 @@ class _CompilerExerciseScreenState extends State<CompilerExerciseScreen> {
     _loadExercise();
   }
 
-  Future<void> _loadExercise() async {
-    try {
-      final data = await _api.get('/controller/execute/${widget.exerciseId}');
-      setState(() {
-        _codeController.text = data['code'] ?? '';
-        _selectedLanguage = data['language'] ?? 'csharp';
-        _description = data['description'] ?? 'Выполните задание';
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка загрузки: $e')),
-      );
-    }
-  }
-
-  Future<void> _runCode() async {
-    if (_codeController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Введите код перед запуском')),
-      );
-      return;
-    }
+Future<void> _loadExercise() async {
+  try {
+    final data = await _api.get('/exercise/${widget.lessonId}');
 
     setState(() {
-      _isRunning = true;
-      _output = 'Выполнение...';
-    });
+      _exerciseId = data['id'];
 
-    try {
-      final data = await _api.post('/controller/execute', {
+      _codeController.text = data['code'] ?? '';
+      _description = data['description'] ?? '';
+      _selectedLanguage = data['language'] ?? 'csharp';
+    });
+  } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Ошибка загрузки: $e')));
+  }
+}
+Future<void> _runCode() async {
+  if (_codeController.text.trim().isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Введите код перед запуском')),
+    );
+    return;
+  }
+
+  setState(() {
+    _isRunning = true;
+    _output = 'Отправка задания...';
+  });
+
+  try {
+    /// Отправляем код
+    final startResponse = await _api.post(
+      '/controller/execute',
+      {
         'code': _codeController.text,
         'language': _selectedLanguage,
-      });
+        'exerciseId': _exerciseId!,
+        'userId': 22, // заменить на текущего пользователя
+      },
+    );
 
-      setState(() {
-        if (data['error'] != null && data['error'].isNotEmpty) {
-          _output = 'Ошибка:\n${data['error']}';
-        } else {
-          _output = data['output'] ?? '✅ Программа выполнена успешно (нет вывода)';
-        }
-      });
-    } catch (e) {
-      setState(() {
-        _output = 'Ошибка: $e';
-      });
-    } finally {
-      setState(() {
-        _isRunning = false;
-      });
+    final String taskId = startResponse['taskId'];
+
+    bool completed = false;
+
+    while (!completed) {
+      await Future.delayed(const Duration(seconds: 1));
+
+      final result =
+          await _api.get('/controller/execute/$taskId');
+
+      final status = result['status'];
+
+      if (status == 'pending') {
+        setState(() {
+          _output = 'Выполнение...';
+        });
+      } else if (status == 'completed') {
+        completed = true;
+
+        final bool isCorrect = result['isCorrect'] ?? false;
+
+        setState(() {
+          _output =
+              "${isCorrect ? "✅ Решение принято" : "❌ Решение неверно"}\n\n${result['output'] ?? ''}";
+        });
+      } else if (status == 'failed') {
+        completed = true;
+
+        setState(() {
+          _output = result['output'] ?? 'Ошибка выполнения';
+        });
+      }
     }
+  } catch (e) {
+    setState(() {
+      _output = "Ошибка: $e";
+    });
+  } finally {
+    setState(() {
+      _isRunning = false;
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {
