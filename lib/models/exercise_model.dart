@@ -2,7 +2,7 @@ class ExerciseModel {
   final int exerciseId;
   final int lessonId;
   final String taskDescription;
-  final String rightAnswer;
+  final int rightAnswer;
   final List<AnswerOption> options;
 
   ExerciseModel({

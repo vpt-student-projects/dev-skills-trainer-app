@@ -4,6 +4,7 @@ class LessonModel {
   final String title;
   final String content;
   final int orderIndex;
+  final String type;
 
   LessonModel({
     required this.lessonId,
@@ -11,6 +12,7 @@ class LessonModel {
     required this.title,
     required this.content,
     required this.orderIndex,
+    required this.type
   });
 
   factory LessonModel.fromJson(Map<String, dynamic> json) {
@@ -19,6 +21,7 @@ class LessonModel {
       courseId: json['courseId'],
       title: json['title'],
       content: json['content'],
+      type: json['type'],
       orderIndex: json['orderIndex'],
     );
   }

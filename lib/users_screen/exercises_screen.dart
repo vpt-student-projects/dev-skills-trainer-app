@@ -298,197 +298,238 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
     );
   }
 
-  Widget _buildResultsScreen() {
-    // Используем данные с сервера если есть, иначе считаем локально
-    int correctCount = _resultData?['correctCount'] ?? 0;
-    int totalCount = _resultData?['totalCount'] ?? _exercises.length;
-    int percent = _resultData?['percent'] ?? (totalCount > 0 ? (correctCount / totalCount * 100).round() : 0);
+ Widget _buildResultsScreen() {
+  // Правильно извлекаем данные из ответа сервера
+  final resultData = _resultData?['result'];
+  
+  int correctCount = resultData?['correctCount'] ?? 0;
+  int totalCount = resultData?['totalQuestions'] ?? _exercises.length;
+  int percent = resultData?['scorePercentage'] ?? 0;
+  
+  // Строим список результатов, сопоставляя с вопросами
+  final List<Map<String, dynamic>> results = [];
+  
+  if (resultData != null && resultData['details'] != null) {
+    final details = resultData['details'] as List;
     
-    // Строим список результатов
-    final List<Map<String, dynamic>> results = [];
-    if (_resultData != null && _resultData!['details'] != null) {
-      // Используем данные с сервера
-      final details = _resultData!['details'] as List;
-      for (var detail in details) {
-        results.add({
-          'index': detail['index'] ?? results.length + 1,
-          'question': detail['question'] ?? '',
-          'userAnswer': detail['userAnswer'] ?? '(нет ответа)',
-          'correctAnswer': detail['correctAnswer'] ?? '',
-          'isCorrect': detail['isCorrect'] ?? false,
-        });
-      }
-    } else {
-      // Локальный подсчёт (fallback)
-      for (int i = 0; i < _exercises.length; i++) {
-        final exercise = _exercises[i];
-        final selectedOption = exercise.options.firstWhere(
-          (opt) => opt.answerId == _selectedAnswerIds[i],
-          orElse: () => AnswerOption(answerId: -1, text: '(нет ответа)'),
-        );
-        final isCorrect = selectedOption.text == exercise.rightAnswer;
-        if (isCorrect) correctCount++;
-        
-        results.add({
-          'index': i + 1,
-          'question': exercise.taskDescription,
-          'userAnswer': selectedOption.text,
-          'correctAnswer': exercise.rightAnswer,
-          'isCorrect': isCorrect,
-        });
-      }
-      percent = (correctCount / _exercises.length * 100).round();
+    for (var detail in details) {
+      final questionId = detail['questionId'];
+      final isCorrect = detail['isCorrect'];
+      
+      // Находим соответствующий вопрос по ID
+      final exercise = _exercises.firstWhere(
+        (ex) => ex.exerciseId == questionId,
+        // orElse: () => ExerciseModel(
+        //   exerciseId: questionId,
+        //   taskDescription: 'Вопрос не найден',
+        //   options: [],
+        //   rightAnswer: '',
+        // ),
+      );
+      
+      // Находим выбранный ответ пользователя для этого вопроса
+      final selectedAnswerId = _selectedAnswerIds[_exercises.indexOf(exercise)];
+      final selectedOption = exercise.options.firstWhere(
+        (opt) => opt.answerId == selectedAnswerId,
+        orElse: () => AnswerOption(answerId: -1, text: '(нет ответа)'),
+      );
+
+      final correctOption = exercise.options.firstWhere(
+        (opt) => opt.answerId == exercise.rightAnswer, // Сравниваем ID, а не текст
+        orElse: () => AnswerOption(
+          answerId: -1, 
+          text: 'Правильный ответ не найден',
+        ),
+      );
+      
+      results.add({
+        'index': questionId,
+        'question': exercise.taskDescription,
+        'userAnswer': selectedOption.text,
+        'correctAnswer': correctOption.text,
+        'isCorrect': isCorrect,
+      });
     }
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Результаты теста'),
-        backgroundColor: AppColors.secondary,
-        automaticallyImplyLeading: false,
-      ),
-      body: Column(
-        children: [
-          // Карточка с общей оценкой
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: percent >= 70 
-                    ? [Colors.green.shade800, Colors.green.shade600]
-                    : percent >= 40
-                        ? [Colors.orange.shade800, Colors.orange.shade600]
-                        : [Colors.red.shade800, Colors.red.shade600],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  '$correctCount / $totalCount',
-                  style: const TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '$percent%',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  percent >= 70 ? '✅ Отлично!'
-                      : percent >= 40 ? '⚠️ Можно лучше'
-                      : '❌ Нужно повторить материал',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Список результатов по каждому вопросу
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: results.length,
-              itemBuilder: (context, index) {
-                final result = results[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  color: result['isCorrect'] 
-                      ? Colors.green.withOpacity(0.15)
-                      : Colors.red.withOpacity(0.15),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: result['isCorrect'] ? Colors.green : Colors.red,
-                      child: Text(
-                        '${result['index']}',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    title: Text(
-                      result['question'],
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Ваш ответ: ${result['userAnswer']}',
-                          style: TextStyle(
-                            color: result['isCorrect'] ? Colors.green : Colors.red,
-                          ),
-                        ),
-                        if (!result['isCorrect'])
-                          Text(
-                            'Правильный: ${result['correctAnswer']}',
-                            style: const TextStyle(color: Colors.green),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          
-          // Кнопки
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _resetQuiz,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      '🔄 Пройти заново',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.alternate,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      '◀️ Назад к урокам',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  } else {
+    // Fallback - локальный подсчёт (если данные с сервера не пришли)
+    for (int i = 0; i < _exercises.length; i++) {
+      final exercise = _exercises[i];
+      final selectedOption = exercise.options.firstWhere(
+        (opt) => opt.answerId == _selectedAnswerIds[i],
+        orElse: () => AnswerOption(answerId: -1, text: '(нет ответа)'),
+      );
+
+      final correctOption = exercise.options.firstWhere(
+        (opt) => opt.answerId == exercise.rightAnswer, // Сравниваем ID, а не текст
+        orElse: () => AnswerOption(
+          answerId: -1, 
+          text: 'Правильный ответ не найден',
+        ),
+      );
+      
+      final isCorrect = selectedOption.text == exercise.rightAnswer;
+      if (isCorrect) correctCount++;
+      
+      results.add({
+        'index': i + 1,
+        'question': exercise.taskDescription,
+        'userAnswer': selectedOption.text,
+        'correctAnswer': correctOption.text,
+        'isCorrect': isCorrect,
+      });
+    }
+    percent = (correctCount / _exercises.length * 100).round();
   }
+  
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('Результаты теста'),
+      backgroundColor: AppColors.secondary,
+      automaticallyImplyLeading: false,
+    ),
+    body: Column(
+      children: [
+        // Карточка с общей оценкой
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: percent >= 70 
+                  ? [Colors.green.shade800, Colors.green.shade600]
+                  : percent >= 40
+                      ? [Colors.orange.shade800, Colors.orange.shade600]
+                      : [Colors.red.shade800, Colors.red.shade600],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            children: [
+              Text(
+                '$correctCount / $totalCount',
+                style: const TextStyle(
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '$percent%',
+                style: const TextStyle(
+                  fontSize: 24,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                percent >= 70 ? '✅ Отлично!'
+                    : percent >= 40 ? '⚠️ Можно лучше'
+                    : '❌ Нужно повторить материал',
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Список результатов по каждому вопросу
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: results.length,
+            itemBuilder: (context, index) {
+              final result = results[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                color: result['isCorrect'] 
+                    ? Colors.green.withOpacity(0.15)
+                    : Colors.red.withOpacity(0.15),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: result['isCorrect'] ? Colors.green : Colors.red,
+                    child: Text(
+                      '${result['index']}',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  title: Text(
+                    result['question'],
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ваш ответ: ${result['userAnswer']}',
+                        style: TextStyle(
+                          color: result['isCorrect'] ? Colors.green : Colors.red,
+                        ),
+                      ),
+                      if (!result['isCorrect'])
+                        Text(
+                          'Правильный: ${result['correctAnswer']}',
+                          style: const TextStyle(color: Colors.green),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        
+        // Кнопки
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _resetQuiz,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    '🔄 Пройти заново',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.alternate,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    '◀️ Назад к урокам',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+ }
 }
