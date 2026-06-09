@@ -177,9 +177,9 @@ dotnet test
 Руководитель: Бельчич Д.С
 
 Контакты:
-Бугайчук Андрей Евгеньевич: https://github.com/xzkeeer
-Епихин Максим Альбертович: https://github.com/Getbanned1
-Некрасов Максим Дмитриевич: https://github.com/unmoraI
+- Бугайчук Андрей Евгеньевич: https://github.com/xzkeeer
+- Епихин Максим Альбертович: https://github.com/Getbanned1
+- Некрасов Максим Дмитриевич: https://github.com/unmoraI
 
 ---
 
