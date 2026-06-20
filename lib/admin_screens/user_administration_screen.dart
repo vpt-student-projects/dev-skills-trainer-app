@@ -8,8 +8,12 @@ class UserAdministrationScreen extends StatefulWidget {
   final String email;
   final String userUuid;
   final String? role;
-  const UserAdministrationScreen({super.key, required this.email, required this.userUuid, this.role});
-
+  const UserAdministrationScreen({
+    super.key,
+    required this.email,
+    required this.userUuid,
+    this.role,
+  });
 
   @override
   _UserAdministrationScreenState createState() =>
@@ -21,7 +25,7 @@ class _UserAdministrationScreenState extends State<UserAdministrationScreen> {
   final passwordHashController = TextEditingController();
   final roleController = TextEditingController();
   final userUuidController = TextEditingController();
-  
+
   bool _loading = false;
   bool _saving = false;
 
@@ -40,42 +44,40 @@ class _UserAdministrationScreenState extends State<UserAdministrationScreen> {
     roleController.text = widget.role ?? 'студент';
     userUuidController.text = widget.userUuid;
 
-
     setState(() {
       _loading = false;
     });
   }
 
-Future<void> _save() async {
-  if (_saving) return;
+  Future<void> _save() async {
+    if (_saving) return;
 
-  setState(() => _saving = true);
+    setState(() => _saving = true);
 
-  try {
-    await AdminUsersService().updateUser(
-      AdminUpdateUserRequest(
-        userUuid: widget.userUuid,
-        newEmail: emailController.text.trim(),
-        newPassword: passwordHashController.text.isEmpty
-            ? ""
-            : passwordHashController.text.trim(),
-      ),
-    );
+    try {
+      await AdminUsersService().updateUser(
+        AdminUpdateUserRequest(
+          userUuid: widget.userUuid,
+          newEmail: emailController.text.trim(),
+          newPassword: passwordHashController.text.isEmpty
+              ? ""
+              : passwordHashController.text.trim(),
+        ),
+      );
 
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Пользователь обновлён')),
-    );
-  } catch (e) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Ошибка: $e')),
-    );
-  } finally {
-    if (mounted) setState(() => _saving = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Пользователь обновлён')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
-}
-
 
   @override
   void dispose() {
@@ -103,22 +105,46 @@ Future<void> _save() async {
                       controller: emailController,
                       decoration: const InputDecoration(labelText: 'Новый email'),
                     ),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: passwordHashController,
                       decoration: const InputDecoration(
                         labelText: 'Новый пароль',
                       ),
                     ),
-                    TextFormField(
-                      controller: roleController,
-                      decoration: const InputDecoration(labelText: 'Роль'),
+                    const SizedBox(height: 16),
+                    // ✅ ВЫПАДАЮЩИЙ СПИСОК ВМЕСТО ТЕКСТОВОГО ПОЛЯ
+                    DropdownButtonFormField<String>(
+                      value: roleController.text.isNotEmpty
+                          ? roleController.text
+                          : null,
+                      decoration: const InputDecoration(
+                        labelText: 'Роль',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'студент',
+                          child: Text('Студент'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'админ',
+                          child: Text('Администратор'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          roleController.text = value!;
+                        });
+                      },
                     ),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: userUuidController,
                       decoration: const InputDecoration(labelText: 'User UUID'),
+                      readOnly: true,
                     ),
                     const SizedBox(height: 20),
-
                     ElevatedButton(
                       onPressed: _saving ? null : _save,
                       child: Text(_saving ? 'Изменяем...' : 'Изменить'),
