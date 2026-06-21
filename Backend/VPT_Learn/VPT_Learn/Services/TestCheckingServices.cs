@@ -51,11 +51,10 @@ namespace VPT_Learn.Services
                     IsCorrect = isCorrect
                 });
             }
-            
             int totalQuestions = exercises.Count;
             int incorrectCount = totalQuestions - correctCount;
             double scorePercentage = totalQuestions > 0 ? (correctCount * 100.0 / totalQuestions) : 0;
-            
+
             return new TestResult
             {
                 Results = results,
@@ -65,66 +64,7 @@ namespace VPT_Learn.Services
                 ScorePercentage = Math.Round(scorePercentage, 2)
             };
         }
-        
-
-        
-        /// <summary>
-        /// Расширенная версия проверки с получением текстов ответов для отчета
-        /// </summary>
-        // public DetailedTestResult CheckUserAnswersDetailed(
-        //     List<Exercise> exercises, 
-        //     List<AnswerClass> allAnswers,
-        //     List<UserTestAnswer> userAnswers)
-        // {
-        //     var result = new DetailedTestResult();
-            
-        //     foreach (var exercise in exercises)
-        //     {
-        //         var userAnswer = userAnswers.FirstOrDefault(a => a.ExerciseId == exercise.ExerciseId);
-        //         var exerciseAnswers = allAnswers.Where(a => a.ExerciseId == exercise.ExerciseId).ToList();
-                
-        //         var correctAnswer = exerciseAnswers.FirstOrDefault(a => a.Id == exercise.RightAnswer);
-                
-        //         bool isCorrect = userAnswer != null && userAnswer.SelectedAnswerId == exercise.RightAnswer;
-                
-        //         if (isCorrect)
-        //             result.CorrectCount++;
-        //         else
-        //             result.IncorrectCount++;
-                
-        //         result.QuestionDetails.Add(new QuestionDetail
-        //         {
-        //             ExerciseId = exercise.ExerciseId,
-        //             TaskDescription = exercise.TaskDescription,
-        //             IsCorrect = isCorrect,
-        //             UserSelectedAnswerId = userAnswer?.SelectedAnswerId ?? 0,
-        //             UserSelectedAnswerText = userAnswer != null 
-        //                 ? exerciseAnswers.FirstOrDefault(a => a.Id == userAnswer.SelectedAnswerId)?.Answer 
-        //                 : "Не выбран",
-        //             CorrectAnswerText = correctAnswer?.Answer ?? "Не указан",
-        //             CorrectAnswerId = exercise.RightAnswer ?? 0
-        //         });
-        //     }
-            
-        //     result.TotalQuestions = exercises.Count;
-        //     result.ScorePercentage = result.CorrectCount > 0 
-        //         ? (result.CorrectCount * 100.0 / result.TotalQuestions) 
-        //         : 0;
-            
-        //     return result;
-        //}
     }
-    
-    
-    // Детальный результат с текстами ответов
-    // public class DetailedTestResult
-    // {
-    //     public List<QuestionDetail> QuestionDetails { get; set; } = new List<QuestionDetail>();
-    //     public int TotalQuestions { get; set; }
-    //     public int CorrectCount { get; set; }
-    //     public int IncorrectCount { get; set; }
-    //     public double ScorePercentage { get; set; }
-    // }
     
     public class QuestionDetail
     {

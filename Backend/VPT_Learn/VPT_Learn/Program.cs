@@ -55,8 +55,6 @@ namespace VPT_Learn
                         )
                     };
                 });
-
-
             builder.Services.AddAuthorization();
 
             builder.Services.AddSwaggerGen(c =>
@@ -112,7 +110,6 @@ namespace VPT_Learn
                 });
 
             });
-
             builder.Configuration.AddEnvironmentVariables();
             var url = Environment.GetEnvironmentVariable("SUPABASE_URL");
             var key = Environment.GetEnvironmentVariable("SUPABASE_SERVICE_ROLE_KEY");
@@ -167,10 +164,7 @@ namespace VPT_Learn
             app.UseAuthentication(); // JWT проверка
             app.UseAuthorization();
             app.UseMiddleware<SupabaseAuthMiddleware>();
-
-
             app.MapControllers();
-
             app.Run();
         }
     }

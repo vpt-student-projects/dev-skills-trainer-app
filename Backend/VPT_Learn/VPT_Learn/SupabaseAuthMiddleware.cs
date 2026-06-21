@@ -18,7 +18,6 @@
             context.Items["SupabaseAccessToken"] = accessToken;
             context.Items["SupabaseRefreshToken"] = refreshHeader; // сохраняем refresh token
         }
-
         await _next(context);
     }
 }
