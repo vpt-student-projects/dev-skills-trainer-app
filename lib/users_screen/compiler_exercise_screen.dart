@@ -70,6 +70,7 @@ Future<void> _runCode() async {
     _isRunning = true;
     _output = 'Отправка задания...';
   });
+  final userdata = await _api.get('/user/current');
 
   try {
     /// Отправляем код
@@ -79,7 +80,7 @@ Future<void> _runCode() async {
         'code': _codeController.text,
         'language': _selectedLanguage,
         'exerciseId': _exerciseId!,
-        'userId': 22, // заменить на текущего пользователя
+        'userId': userdata['userId'], // заменить на текущего пользователя
       },
     );
 
