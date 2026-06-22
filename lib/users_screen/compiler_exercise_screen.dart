@@ -50,7 +50,7 @@ Future<void> _loadExercise() async {
       _exerciseId = data['id'];
 
       _codeController.text = data['code'] ?? '';
-      _description = data['description'] ?? '';
+      _description = data['taskDescription'] ?? '';
       _selectedLanguage = data['language'] ?? 'csharp';
     });
   } catch (e) {
