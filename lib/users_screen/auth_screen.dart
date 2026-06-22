@@ -39,6 +39,35 @@ class _AuthScreenState extends State<AuthScreen>
     super.dispose();
   }
 
+  void _handleError(dynamic error) {
+    String errorMessage = error.toString();
+    
+    // Проверяем, является ли ошибка строкой и содержит ли код 400
+    if (error.toString().contains('400') || 
+        error.toString().contains('Bad Request') ||
+        error.toString().toLowerCase().contains('неверный') ||
+        error.toString().toLowerCase().contains('invalid')) {
+      errorMessage = 'Неверный логин или пароль';
+    }
+    // Проверяем сообщение об ошибке от сервера
+    else if (error is String) {
+      if (error.toLowerCase().contains('email') || 
+          error.toLowerCase().contains('password') ||
+          error.toLowerCase().contains('auth')) {
+        errorMessage = 'Неверный логин или пароль';
+      }
+    }
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(errorMessage),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
 
 Future<void> createAccount() async {
   final email = _emailController.text.trim();
@@ -96,9 +125,7 @@ Future<void> login() async {
       );
     }
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(e.toString())),
-    );
+    _handleError(e);
   }
 }
 
